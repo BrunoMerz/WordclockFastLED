@@ -1,4 +1,4 @@
-# wordclockESP V 4.4
+# wordclockESP V 7.0
  Wordclock for Expressif ESP8266, ESP-01S, Wemos D1 mini/pro based on FastLED
 
 ## Wordclock operation
@@ -45,7 +45,7 @@ For ESP8266
 
 For ESP-01S:
 ```bash
-   Board:         esp8266 by esp8266 comunity Version 3.0.2
+   Board:         esp8266 by esp8266 comunity Version 2.7.4
                   Generic ESP8266 Module
    CPU Frequency: 80 Mhz
    Flash Mode:    QIO (fast)
