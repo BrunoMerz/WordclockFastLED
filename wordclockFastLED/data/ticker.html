@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>%Ticker Einstellungen%</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link rel="icon" type="image/vnd.microsoft.icon" sizes="32x32" href="/favicon.ico">
+    <link rel="stylesheet" href="wordclock.css">
+</head>
+
+<body class="body">
+    <p class="heading">Ticker %Einstellungen%</p>
+    <p class="heading">%VERSION%</p>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <form name="settings" method="post" enctype="multipart/form-data" onsubmit="return saveSettings(this);" action="#">
+        <table style="text-align: left; width: 650px; height: 77px;">
+            <tbody>
+                <tr>
+                    <td style="width: 153px;">%Text%</td>
+                    <td style="width: 363px;">
+                        <input class="box" name="ticker_text" style="width: 400px"
+                            onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;">%Symbol vorher%</td>
+                    <td style="width: 363px;">
+                        <input class="box" name="SV" style="width: 100px" onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;">%Symbol nachher%</td>
+                    <td style="width: 363px;">
+                        <input class="box" name="SN" style="width: 100px" onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr style="width: 153px;">
+                    <td>%Muster vorher (Nummer)%</td>
+                    <td>
+                        <input class="box" style="width: 42px" min="0" max="99" name="MV" value="" type="number"
+                            onchange="return saveSettings(this);">
+
+                    </td>
+                </tr>
+                <tr style="width: 153px;">
+                    <td>%Muster nachher (Nummer)%</td>
+                    <td>
+                        <input class="box" style="width: 42px" min="0" max="99" name="MN" value="" type="number"
+                            onchange="return saveSettings(this);">
+
+                    </td>
+                </tr>
+                <tr style="width: 153px;">
+                    <td>%Ticker Farbe%</td>
+                    <td>
+                        <input class="box" type="color" name="F" value="#ffffff" id="color" title="Hex-Wert eingeben"
+                            onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;">%Ticker Geschwindigkeit%</td>
+                    <td style="width: 363px;">
+                        <input class="box" style="width: 48px" name="G" type="number" value="180"
+                            onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;">%H&auml;ufigkeit (Min.)%</td>
+                    <td style="width: 363px;">
+                        <input class="box" style="width: 48px" name="H" type="number" value="60"
+                            onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;">%Anzahl Wiederholungen%</td>
+                    <td style="width: 363px;">
+                        <input class="box" style="width: 48px" name="W" type="number" value="1"
+                            onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;"></td>
+                    <td style="width: 363px;">
+                        <input style="width: 100px; text-align: center" class="button" type="button"
+                            onclick="parent.location='do?ticker=1'" value="%Test%">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 153px;"></td>
+                    <td style="width: 363px;">
+                        <input style="width: 100px; text-align: center" class="button" type="button"
+                            onclick="parent.location='/'" value="%Zurück%">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <script>
+
+        function getData() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var obj = JSON.parse(this.responseText);
+                    if (obj.hasOwnProperty("ticker_text")) {
+                        document.settings.ticker_text.value = obj.ticker_text;
+                    }
+                    if (obj.hasOwnProperty("SV")) {
+                        document.settings.SV.value = obj.SV;
+                    }
+                    if (obj.hasOwnProperty("SN")) {
+                        document.settings.SN.value = obj.SN;
+                    }
+                    if (obj.hasOwnProperty("MV")) {
+                        document.settings.MV.value = obj.MV;
+                    }
+                    if (obj.hasOwnProperty("MN")) {
+                        document.settings.MN.value = obj.MN;
+                    }
+                    if (obj.hasOwnProperty("F")) {
+                        document.settings.F.value = obj.F;
+                    }
+                    if (obj.hasOwnProperty("G")) {
+                        document.settings.G.value = obj.G;
+                    }
+                    if (obj.hasOwnProperty("H")) {
+                        document.settings.H.value = obj.H;
+                    }
+                    if (obj.hasOwnProperty("W")) {
+                        document.settings.W.value = obj.W;
+                    }
+                };
+            };
+            xhttp.open("GET", "getSettings", true);
+            xhttp.send();
+        }
+
+        document.addEventListener('DOMContentLoaded', getData, false);
+
+        function oReqSuccess() {
+            this.callback.apply(this, this.arguments);
+        }
+
+
+        function oReqError() {
+            console.error(this.statusText);
+        }
+
+
+        function callback() {
+            location.reload();
+        }
+
+
+        function saveSettings(theForm) {
+            var oData, oReq, oJson = {};
+
+            oData = new FormData(document.settings);
+
+            oReq = new XMLHttpRequest();
+
+            oReq.callback = callback;
+            oReq.onload = oReqSuccess;
+            oReq.onerror = oReqError;
+
+            oReq.open("POST", "/saveSettings", true);
+            oReq.setRequestHeader("Content-type", "application/json");
+            oData.forEach((value, key) => { oJson[key] = value });
+            s = JSON.stringify(oJson);
+            oReq.send(s);
+            return false;
+        }
+    </script>
+</body>
+
+</html>

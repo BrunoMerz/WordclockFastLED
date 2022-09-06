@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	<title>%Experten Einstellungen%</title>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+	<link rel="icon" type="image/vnd.microsoft.icon" sizes="32x32" href="/favicon.ico">
+	<link rel="stylesheet" href="wordclock.css">
+</head>
+
+<body class="body">
+	<p class="heading">%Experten Einstellungen%</p>
+	<p class="heading">%VERSION%</p>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<form name="settings" method="post" enctype="multipart/form-data" onsubmit="return saveSettings(this);"	action="saveSettings">
+		<table style="text-align: left; width: 650px; height: 77px;">
+			<tbody>
+				<tr style="width: 153px;">
+					<td>%Name der Uhr%</td>
+					<td>
+						<input class="box" name="hostname" value="Wortuhr"/>
+					</td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr style="width: 153px;">
+					<td>NTP Server</td>
+					<td>
+						<input class="box" name="ntp_server" value="de.pool.ntp.org">
+					</td>
+					<td style="width: 153px;">%Zeitzone%</td>
+					<td>
+						<input class="box" style="width: 200px;" name="time_zone" value="CET-1CEST,M3.5.0,M10.5.0/3">
+					</td>
+				</tr>
+				<tr style=%WITH_MQTT%>
+					<td style="width: 153px;">MQTT Server</td>
+					<td>
+						<input class="box" name="mqtt_server">
+					</td>
+					<td style="width: 153px;">MQTT Port</td>
+					<td>
+						<input class="box" style="width: 48px;" name="mqtt_port" value="1883" type="number">
+					</td>
+				</tr>
+				<tr style=%WITH_MQTT%>
+					<td style="width: 153px;">MQTT Username</td>
+					<td>
+						<input class="box" name="mqtt_user">
+					</td>
+
+					<td style="width: 153px;">MQTT Password</td>
+					<td>
+						<input class="box" name="mqtt_password">
+					</td>
+				</tr>
+				<tr style=%WITH_MQTT%>
+					<td style="width: 153px;">%Breitengrad%</td>
+					<td>
+						<input class="box" style="width: 80px;" name="latitude" type="number" value="48.056134" step="any">
+					</td>
+					<td style="width: 153px;">%Längengrad%</td>
+					<td>
+						<input class="box" style="width: 80px;" name="longitude" type="number" value="8.448624" step="any">
+					</td>
+				</tr>
+				<tr style=%WITH_ALEXA%>
+					<td style="width: 153px;">%Alexa verwenden%</td>
+					<td>
+						<label class="switch">
+							<input type="checkbox" id="alexaEnabled" name="alexaEnabled" onchange="return saveSettings(this);" checked="false">
+							<span class="slider round"></span>
+						</label>
+					</td>
+					<td style="width: 153px;">%Alexa Name%</td>
+					<td>
+						<input class="box" style="width: 80px;" name="alexaName" value="">
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 153px;">%Sonnenaufgang%</td>
+					<td style="width: 153px;">%SUNRISE%</td>
+					<td style="width: 153px;">%Sonnenuntergang%</td>
+					<td style="width: 153px;">%SUNSET%</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td style="width: 363px;">
+						<input class="button" value="%Einstellungen speichern%" type="submit">
+					</td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<br>
+	<br>
+	<form name="fileinfo" method="post" enctype="multipart/form-data" onsubmit="return uploadFile(this);"
+		action="upload">
+		<table style="text-align: left; width: 650px; height: 77px">
+			<tbody>
+				<tr>
+					<td style="width: 153px;">%Datei installieren%</td>
+					<td>
+						<input id="inputfile" class="inputfile" name="InputFile" size="50" type="file">
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 153px;"></td>
+					<td>
+						<input id="install" class="button" value="%Datei installieren%" type="submit">
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 153px;"></td>
+					<td>
+						<progress id="progressBar" value="0" max="0">
+							
+						</progress>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<br>
+	<form>
+		<table style="text-align: left;">
+			<tbody>
+				<tr>
+					<td style="width: 153px;">%Status anzeigen%</td>
+					<td>
+						<input class="button" type="submit" value="%Status%" formaction="state">
+					</td>
+					<td>
+						<input class="button" type="submit" value="%Logfile%" formaction="logfile.log">
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 153px;"></td>
+					<td>
+						<input class="button" type="submit" value="%Zurück%" formaction="/">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<script>
+	  function setCursor(cursorStyle) {
+		var selectors;
+		if (cursorStyle == "wait") {
+			selectors = "input,body";
+		} else {
+			selectors = "input";
+		}
+		let nodeList = Array.from(document.querySelectorAll(selectors));
+		for (let i = 0; i < nodeList.length; i++) {
+			nodeList[i].style.cursor = cursorStyle;
+		}
+	  }
+
+	  function loadStartFunction() {
+		setCursor("wait");
+	  }
+
+	  function progressFunction(evt){  
+         var progressBar = document.getElementById("progressBar");
+         if (evt.lengthComputable) {
+		   console.log("total="+evt.total);
+		   console.log("loaded="+evt.loaded);
+           progressBar.max = evt.total;  
+           progressBar.value = evt.loaded;  
+         }  
+	  }
+
+	  function transferCompleteFunction() {
+		setCursor("default");
+		document.getElementById("inputfile").value="";
+		var progressBar = document.getElementById("progressBar");
+		progressBar.removeAttribute("max");
+		progressBar.removeAttribute("value"); 
+        
+	  }
+
+	  function uploadFile(){  
+	    var filesToBeUploaded = document.getElementById("inputfile");  
+        var file = filesToBeUploaded.files[0];;
+		console.log("File="+file.name+", Type="+file.type);
+        var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function () {
+	      if (this.readyState == 4 && this.status == 200) {
+		    //pb.setAttribute("max", "0");
+		    //pb.setAttribute("value", "0");
+		  }
+		}
+		const pb = document.getElementById("progressBar");
+		// 👇️ set `id` attribute on element
+		pb.setAttribute("max", "1000");
+		pb.setAttribute("value", "0");
+		
+        xhr.upload.addEventListener("loadstart", loadStartFunction, false);  
+        xhr.upload.addEventListener("progress", progressFunction, false);  
+        xhr.upload.addEventListener("load", transferCompleteFunction, false);  
+		
+		
+	
+        xhr.open("POST", "/upload", true);  
+        xhr.setRequestHeader("Content-type", file.type);  
+        xhr.setRequestHeader("X_FILE_NAME", file.name);  
+        xhr.send(file);
+      }  
+
+
+	  function saveSettings(theForm) {
+		var oData, oReq, oJson = {};
+
+		oData = new FormData(document.settings);
+
+		oReq = new XMLHttpRequest();
+		
+		oReq.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+			response = this.responseText;
+            console.log("response="+response);
+          }
+        };
+		
+		oReq.open("POST", "/saveSettings", true);
+		oReq.setRequestHeader("Content-type", "application/json");
+		oData.forEach((value, key) => { oJson[key] = value });
+		document.getElementById("alexaEnabled").value = document.getElementById("alexaEnabled").checked;
+		oJson["alexaEnabled"] = document.getElementById("alexaEnabled").value;
+		oJson["mqtt_server"] = document.settings.mqtt_server.value;
+		oJson["mqtt_port"] = document.settings.mqtt_port.value;
+		oJson["mqtt_user"] = document.settings.mqtt_user.value;
+		oJson["mqtt_password"] = document.settings.mqtt_password.value;
+		oJson["alexaName"] = document.settings.alexaName.value;
+
+		s = JSON.stringify(oJson);
+
+		oReq.send(s);
+		return false;
+	  }
+
+
+		function getData() {
+			setCursor("pointer");
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200) {
+				//console.log("getData="+this.responseText);
+					var obj = JSON.parse(this.responseText);
+					if (obj.hasOwnProperty("hostname")) {
+						document.settings.hostname.value = obj.hostname;
+					}
+					if (obj.hasOwnProperty("ntp_server")) {
+						document.settings.ntp_server.value = obj.ntp_server;
+					}
+					if (obj.hasOwnProperty("time_zone")) {
+						document.settings.time_zone.value = obj.time_zone;
+					}
+					if (obj.hasOwnProperty("mqtt_server")) {
+						document.settings.mqtt_server.value = obj.mqtt_server;
+					}
+					if (obj.hasOwnProperty("mqtt_port")) {
+						document.settings.mqtt_port.value = obj.mqtt_port;
+					}
+					if (obj.hasOwnProperty("mqtt_user")) {
+						document.settings.mqtt_user.value = obj.mqtt_user;
+					}
+					if (obj.hasOwnProperty("mqtt_password")) {
+						document.settings.mqtt_password.value = obj.mqtt_password;
+					}
+					if (obj.hasOwnProperty("latitude")) {
+						document.settings.latitude.value = obj.latitude;
+					}
+					if (obj.hasOwnProperty("longitude")) {
+						document.settings.longitude.value = obj.longitude;
+					}
+					if (obj.hasOwnProperty("alexaEnabled")) {
+						document.settings.alexaEnabled.checked = (obj.alexaEnabled == "true");
+					}
+					if (obj.hasOwnProperty("alexaName")) {
+						document.settings.alexaName.value = obj.alexaName;
+					}
+					setCursor("pointer");
+				};
+			};
+			xhttp.open("GET", "getSettings", true);
+			xhttp.send();
+		}
+
+		document.addEventListener('DOMContentLoaded', getData, false);
+
+
+	</script>
+</body>
+
+</html>

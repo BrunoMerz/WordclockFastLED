@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+  <head>
+  
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link rel="icon" type="image/vnd.microsoft.icon" sizes="32x32" href="/favicon.ico">
+	<link rel="stylesheet" href="wordclock.css">
+
+	<script>
+		function resizeIframe(obj) {
+			obj.style.height = obj.contentWindow.document.body.offsetHeight+10 + "px";
+		}
+	</script>
+  </head>
+  <body class="body">
+	<table style="text-align: left">
+		<tbody>
+			<tr>
+				<th>%Änderungen% in %VERSION%</th>
+
+			</tr>
+			<tr>
+				<th>Folgende Dateien wurden installiert...</th>
+			</tr>
+			<tr>
+				<th>
+					<iframe  style="width: 650px" id="iframe" src="result.html" frameborder="1" scrolling="no" onload='resizeIframe(this)'></iframe>
+				</th>
+			</tr>
+		</tbody>
+    </table>
+
+	<input  name="ok" class="button" type="button" onClick="parent.location='/seen'" value="%OK%" action="/">
+
+  </body>
+</html>
+		

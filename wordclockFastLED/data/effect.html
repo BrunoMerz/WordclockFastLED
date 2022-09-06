@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>%Effect Einstellungen%</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link rel="icon" type="image/vnd.microsoft.icon" sizes="32x32" href="./favicon.ico">
+    <link rel="stylesheet" href="./wordclock.css">
+</head>
+
+<body class="body">
+    <p class="heading">Effekt %Einstellungen%</p>
+    <p class="heading">%VERSION%</p>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <form method="post" action="#">
+        <table style="text-align: left;">
+            <tbody>
+                <tr>
+                    <td>%Stundeneffekte anzeigen%</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=1'"
+                            value="1">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=2'"
+                            value="2">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=3'"
+                            value="3">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=4'"
+                            value="4">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=5'"
+                            value="5">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=6'"
+                            value="6">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=7'"
+                            value="7">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=8'"
+                            value="8">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=9'"
+                            value="9">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=10'"
+                            value="10">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=11'"
+                            value="11">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=12'"
+                            value="12">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=13'"
+                            value="13">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=14'"
+                            value="14">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=15'"
+                            value="15">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=16'"
+                            value="16">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=17'"
+                            value="17">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=18'"
+                            value="18">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=19'"
+                            value="19">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=20'"
+                            value="20">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=21'"
+                            value="21">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=22'"
+                            value="22">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=23'"
+                            value="23">
+                        <input style="width: 38px" class="button" type="button" onclick="parent.location='do?effect=24'"
+                            value="24">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+    <br>
+    <br>
+    <form name="settings" method="post" enctype="multipart/form-data" action="#">
+        <table style="text-align: left;">
+            <tbody>
+                <tr>
+                    <td style="width: 153px;">%Effektreihenfolge%</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input class="box" name="effect_sequence" style="width: 500px" onchange="return saveSettings(this);">
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+		<br>
+		<div>
+			<div id="second_flash_on_off" style="display:none" align="left">
+				<label style="width: 250px">%Sekundenblinken% %Ein/Aus%</label>
+				<label class="switch">
+					<input type="checkbox" name="sec_flash_enabled" id="sec_flash_enabled" onchange="return saveSettings(this);" value="on">
+					<span class="slider round"></span>
+				</label>
+			</div>
+			<br>
+			<div id="second_type" style="display:none" align="left">
+				<label style="width: 250px">%Sekundenzeiger%</label>
+				<select class="dropbtn" name="seconds_stripe" value="1" onchange="return saveSettings(this);">
+					<option value="1">%Nur Sekundenblinken%</option>
+					<option value="2">%Einzel LED%</option>
+					<option value="3">%Alle LED's%</option>
+				</select>
+			</div>
+		</div>
+    </form>
+    <br>
+    <form>
+		<table style="text-align: left;">
+			<tbody>
+				<tr>
+					<td>
+						<input class="button" type="submit" value="%Zurück%" formaction="/">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+    <script>
+        function getData() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+					console.log(this.responseText);
+                    var obj = JSON.parse(this.responseText);
+                    if (obj.hasOwnProperty("effect_sequence")) {
+                        document.settings.effect_sequence.value = obj.effect_sequence;
+                    }
+					if (obj.hasOwnProperty("seconds_stripe")) {
+						document.getElementById("second_flash_on_off").style.display  = "block";
+						if(obj.seconds_stripe > 1) {
+							console.log("seconds_stripe > 1: "+obj.seconds_stripe);
+							document.getElementById("second_type").style.display  = "block";
+							document.settings.seconds_stripe.options[obj.seconds_stripe-1].selected = true;
+						}
+					}
+					if (obj.hasOwnProperty("sec_flash_enabled")) {
+						console.log("sec_flash_enabled"+obj.sec_flash_enabled);
+						if (obj.sec_flash_enabled == "true") {
+							document.settings.sec_flash_enabled.checked = "on";
+						} else {
+							document.settings.sec_flash_enabled.checked = "";
+						}
+					}
+                };
+            };
+            xhttp.open("GET", "getSettings", true);
+            xhttp.send();
+        }
+
+        document.addEventListener('DOMContentLoaded', getData, false);
+
+        function oReqSuccess() {
+            this.callback.apply(this, this.arguments);
+        }
+
+
+        function oReqError() {
+            console.error(this.statusText);
+        }
+
+
+        function callback() {
+            location.reload();
+        }
+
+
+        function saveSettings(theForm) {
+            var oData, oReq, oJson = {};
+
+            oData = new FormData(document.settings);
+
+            oReq = new XMLHttpRequest();
+
+            oReq.callback = callback;
+            oReq.onload = oReqSuccess;
+            oReq.onerror = oReqError;
+
+            oReq.open("POST", "/saveSettings", true);
+            oReq.setRequestHeader("Content-type", "application/json");
+            oData.forEach((value, key) => {oJson[key] = value});
+			oJson["sec_flash_enabled"]=document.settings.sec_flash_enabled.checked;
+            s = JSON.stringify(oJson);	
+			console.log(s);
+            oReq.send(s);
+            return false;
+        }
+		
+    </script>
+</body>
+
+</html>
