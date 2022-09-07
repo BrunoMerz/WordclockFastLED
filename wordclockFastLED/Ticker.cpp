@@ -117,7 +117,6 @@ void Ticker::render(boolean test) {
 void Ticker::render(int repeat, int tickerSpeed, String tickerText) {
   String tt=tickerText;
   String sVal;
-  int    iVal;
   
   DEBUG_PRINTLN("render: "+tickerText+", repeat="+String(repeat));
 

@@ -207,7 +207,9 @@ int MySpiffs::readFile(String filename, char *buffer) {
       _fileSize = fileObj.size();
       DEBUG_PRINT("#bytes=");
       DEBUG_PRINTLN(_fileSize);
+#if defined(myDEBUG)
       int x=fileObj.readBytes(buffer,_fileSize);
+#endif
       DEBUG_PRINT("readFile: readBytes result=");
       DEBUG_PRINTLN(x);
       *(buffer+_fileSize)='\0';
@@ -485,7 +487,6 @@ String MySpiffs::getState(void) {
   Helper::writeState(ub, LittleFS.usedBytes());
 #else
   FSInfo fs_info;
-  time_t ct;
   Dir dir = LittleFS.openDir("/");
   while (dir.next()) {
     sprintf(txt,"%-20s", dir.fileName().c_str());

@@ -120,6 +120,10 @@ const char compile_date[] = __DATE__ " " __TIME__;
   DCF77Helper dcf77Helper;
 #endif
 
+#if defined(WORDCLOCK_DEBUG)
+aa bb
+#endif
+
 /*
    Handling webserver
 */
@@ -287,10 +291,9 @@ void checkLicense(void) {
   sprintf(license,"%.2x%.2x%.2x-%.2x%.2x%.2x",newMac[0],newMac[1],newMac[2],newMac[3],newMac[4],newMac[5]);
   boolean lp = digitalRead(LICENSE_PIN);
   DEBUG_PRINTF("License pin=%d, value=%d\n",LICENSE_PIN, lp);
-  if(lp || !myspiffs.exists("index.html") || myspiffs.exists("license.txt")) {
+  if(lp || !myspiffs.exists("index.html")) {
     myspiffs.setSetting(F("license"),String(license));
     myspiffs.writeSettings(true);
-    myspiffs.remove("license.txt");
    } else {
     String License = myspiffs.getSetting(F("license"));
     DEBUG_PRINTLN("License="+License+", GEN License="+license);
@@ -742,12 +745,6 @@ void handle_doArgs(AsyncWebServerRequest *request) {
       displayEffekt=value.toInt();
       strcpy(redir, "effect.html");
       DEBUG_PRINTLN(message);
-    } else if(p->name().equalsIgnoreCase(F("datapin"))) {
-      DEBUG_PRINTLN("datapin="+value);
-      if(value.length()) {
-        myspiffs.setSetting(F("data_pin"), value);
-        myspiffs.writeSettings(true);
-      }
     } else if(p->name().equalsIgnoreCase(F("unset"))) {
       DEBUG_PRINTLN("unset="+value);
       if(value.length()) {
@@ -961,10 +958,10 @@ pinMode(ESP_PIN_3, FUNCTION_3);
 
   pinMode(RESET_PIN, INPUT);
   reset_pin = analogRead(RESET_PIN);
-  Serial.print(F("reset_pin="));
+  Serial.print(F("reset_pin A0="));
   Serial.println(reset_pin);
 
-  DEBUG_PRINT(F("\nreset_pin="));
+  DEBUG_PRINT(F("\nreset_pin A0="));
   DEBUG_PRINTLN(reset_pin);
   if(reset_pin >= 1023) {
     Serial.println(F("\nResetting everything"));

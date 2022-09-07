@@ -958,31 +958,38 @@ void Effekte::displayEffect21(void) {
 
   _showTime=false;
   display.clear();
-  
-  uint8_t h = random(0,256);
-
+ 
+  uint8_t maxb = myspiffs.getIntSetting(F("brightness_to"));
   display.setBrightness(2);
-  //for(int br=1; br<100; br+=2) {
-    hsv = CHSV(random(0,256),255,255);
-    for(int x=0; x<11; x++) {
-      for(int y=0; y<10; y++) {
-        turnLedOnOff(x, y, LEDON, 0, false, 0, hsv);
-      }
+  
+  hsv = CHSV(random(0,256),255,255);
+  for(int x=0; x<11; x++) {
+    for(int y=0; y<10; y++) {
+      turnLedOnOff(x, y, LEDON, 0, false, 0, hsv);
     }
-    display.show(DELAY50);
-  //}
-  for(int br=2; br<100; br+=2) {
-    display.setBrightness(br);
-    display.show();
-    delay(100);
   }
-  for(int br=100; br>1; br-=2) {
+  display.show(DELAY50);
+ 
+  for(int br=1; br<maxb; br++) {
     display.setBrightness(br);
-    display.show();
-    delay(100);
+    display.show(200);
+  }
+
+  for(int br=maxb; br>0; br--) {
+    display.setBrightness(br);
+    display.show(200);
   }
 
   display.setBrightness(0);
+  // clear all LEDs
+  _showTime=true;
+  for(int x=0;x<11;x++) {
+    for(int y=0; y<10; y++) {
+      turnLedOnOff(x, y, LEDOFF, 0, false, 0, 0);
+    }
+    display.show(DELAY50);
+  }
+  delay(DELAY500);
 }
 
 
@@ -1152,7 +1159,7 @@ void Effekte::displayEffect24(void) {
    Display Effect 25
 */
 void Effekte::displayEffect25(void) {
-  COLOR_T rgb;
+  COLOR_T rgb=0xffffff;
   
   int arr[68][2]={
     {5,9},
@@ -1238,7 +1245,7 @@ void Effekte::displayEffect25(void) {
   for(int i=0;i<68;i++) {
     int x=arr[i][0];
     int y=arr[i][1];
-    long rnd;
+    long rnd=0;
     if(x==5 && y==9) {
       rnd=random(0,360);
       rgb=display.getRGBColor(rnd*182.04);
@@ -1292,7 +1299,7 @@ void Effekte::displayEffect27(void) {
   endlessloop=true;
   _showTime=false;
   display.clear();
-  float c;
+  float c=0;
   while(endlessloop) {
     for(int x=0; x<11; x++) {
       CHSV hsv = display.getHsvFromDegRnd(0, c);
@@ -1380,7 +1387,6 @@ void Effekte::turnLedOnOff(byte x, byte y, byte z, int delayTime, boolean wakeup
       }
   } else
     display.clearPixel(x, y);
-    
 
   if(wakeup)
     display.show();
