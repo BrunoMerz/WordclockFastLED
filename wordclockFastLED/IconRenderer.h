@@ -22,10 +22,10 @@ class IconRenderer;
 #include <JPEGDecoder.h>  // JPEG decoder library
 #endif
 
-#define BYTE  byte
-#define WORD  short
-#define DWORD int
-#define LONG  int
+#define BYTE  uint8_t
+#define WORD  uint16_t
+#define DWORD uint32_t
+#define LONG  uint32_t
 
 struct ICOHEADER {
    WORD wReserved;  // Always 0

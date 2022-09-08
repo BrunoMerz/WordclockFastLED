@@ -31,7 +31,7 @@
 #define SPRACHE_GR
 
 
-#define WITH_ALEXA
+//#define WITH_ALEXA
 #define WITH_MQTT
 //#define WITH_MAIL
 //#define WITH_AUDIO

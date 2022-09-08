@@ -114,11 +114,13 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
   fb = (char *)malloc(fs+10);
   if(!fb) {
     DEBUG_PRINTF("Malloc %d bytes failed\n",fs);
+    myspiffs.writeLog(F("IconRenderer: malloc failed\n"));
     return;
   }
   int lng = myspiffs.readFile(tmp, fb);
   if(!lng){
     DEBUG_PRINTLN("renderAndDisplay: file not found -> "+iconFileName);
+    myspiffs.writeLog(F("IconRenderer: file not found\n"));
     return;
   }
 
@@ -187,6 +189,7 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
   // icons with compressed bitmaps or icons > display size are not suppoerted
   if(_bitmapInfoHeader.biCompression || height > _height || width > _width) { 
     DEBUG_PRINTLN("Compressed icons or icons greater than LED Matrix not supported");
+    myspiffs.writeLog(F("Compressed icons or icons greater than LED Matrix not supported\n"));
     if(fb) free(fb);
     display.show();
     return;

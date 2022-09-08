@@ -207,9 +207,7 @@ int MySpiffs::readFile(String filename, char *buffer) {
       _fileSize = fileObj.size();
       DEBUG_PRINT("#bytes=");
       DEBUG_PRINTLN(_fileSize);
-#if defined(myDEBUG)
       int x=fileObj.readBytes(buffer,_fileSize);
-#endif
       DEBUG_PRINT("readFile: readBytes result=");
       DEBUG_PRINTLN(x);
       *(buffer+_fileSize)='\0';
