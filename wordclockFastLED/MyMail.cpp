@@ -13,7 +13,7 @@
    Receive/Send Email
 */
 
-//#define myDEBUG
+#define myDEBUG
 #include "Debug.h"
 
 #include "Configuration.h"
@@ -33,6 +33,44 @@ extern int lastMinutes;
 extern word matrix[16];
 
 
+void connectWiFi()
+{
+    WiFi.disconnect();
+
+    Serial.print("Connecting to AP");
+/*
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.print(".");
+        delay(200);
+    }
+*/
+    Serial.println("");
+    Serial.println("WiFi connected.");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+    Serial.println();
+}
+
+/* Callback function to get the Email reading status */
+void imapCallback(IMAP_Status status)
+{
+    /* Print the current status */
+    Serial.println(status.info());
+
+    /* Show the result when reading finished */
+    if (status.success())
+    {
+        /* Print the result */
+        /* Get the message list from the message list data */
+        //IMAP_MSG_List msgList = imap.data();
+        //printMessages(msgList.msgItems, imap.headerOnly());
+
+        /* Clear all stored data in IMAPSession object */
+        //imap.empty();
+    }
+}
 
 /*
  * Constructor
@@ -40,6 +78,9 @@ extern word matrix[16];
 MyMail::MyMail(void) {
   _initDone = false;
   _lastTime = millis();
+  _imap = 0;
+  _config = 0;
+  _session = 0;
 }
 
 boolean MyMail::init(void) {
@@ -48,12 +89,17 @@ boolean MyMail::init(void) {
   _config  = new IMAP_Config();
   _session = new ESP_Mail_Session();
 
+  /*  Set the network reconnection option */
+  MailClient.networkReconnect(true);
+  _imap->debug(1);
+  _imap->callback(imapCallback);
+
   // IMAP Host
   _imapHost = myspiffs.getSetting(F("imapHost"));
   if(!_imapHost.length())
     return false;
   _session->server.host_name = _imapHost.c_str();
-  DEBUG_PRINTF("MyMail::init hostName=<%s>\n", _session->server.host_name);
+  DEBUG_PRINTF("MyMail::init hostName=<%s>\n", _session->server.host_name.c_str());
 
   // IMAP Port
   _imapPort = myspiffs.getIntSetting(F("imapPort"));
@@ -67,14 +113,14 @@ boolean MyMail::init(void) {
   if(!_imapMail.length())
     return false;
   _session->login.email = _imapMail.c_str();
-  DEBUG_PRINTF("MyMail::init imapMail=<%s>\n", _session->login.email);
+  DEBUG_PRINTF("MyMail::init imapMail=<%s>\n", _session->login.email.c_str());
 
   //  IMAP Password
   _imapPassword = myspiffs.getSetting(F("imapPassword"));
   if(!_imapMail.length())
     return false;
   _session->login.password = _imapPassword.c_str();
-  DEBUG_PRINTF("MyMail::init imapPassword=<%s>\n", _session->login.password);
+  DEBUG_PRINTF("MyMail::init imapPassword=<%s>\n", _session->login.password.c_str());
 
   // IMAP  Folder
   _folder = myspiffs.getSetting(F("imapFolder"));
@@ -82,16 +128,18 @@ boolean MyMail::init(void) {
     _folder = "INBOX";
   DEBUG_PRINTF("MyMail::init Folder=<%s>\n", _folder.c_str());
   
+  _session->time.ntp_server = myspiffs.getSetting(F("ntp_server"));
+  _session->time.gmt_offset = 1;
+  _session->time.day_light_offset = 1;
+ 
+  _session->network_connection_handler = connectWiFi;
 
 
-
-/*
   _folder  = "INBOX";
   _session->server.host_name = "imap.gmx.net";
   _session->server.port = 993;
   _session->login.email = "bmerz51@gmx.de";
   _session->login.password = "Gmxzr810$10";
-*/
 
 
   _config->fetch.uid = "";
@@ -126,9 +174,8 @@ boolean MyMail::init(void) {
   */
   _config->limit.attachment_size = 0; //1024 * 1024 * 5;
 
-#ifdef myDEBUG
-  _imap->debug(333);
-#endif
+
+  _imap->setNetworkStatus(true);
 
   _initDone = true;
   DEBUG_PRINTLN("Mail init done");
@@ -147,13 +194,13 @@ boolean MyMail::check(void) {
   DEBUG_PRINTLN("check now");
   DEBUG_FLUSH();
 
-  if(strlen(_session->server.host_name)) {
+  if(strlen(_session->server.host_name.c_str())) {
     newTime = millis();
     if(newTime < _lastTime+30000) //180000
       return true;
     _lastTime = newTime;
     
-    DEBUG_PRINTF("Trying to read mails from '%s'\n", _session->server.host_name);
+    DEBUG_PRINTF("Trying to read mails from '%s'\n", _session->server.host_name.c_str());
     DEBUG_FLUSH();
     
     /* Connect to server with the session and config */

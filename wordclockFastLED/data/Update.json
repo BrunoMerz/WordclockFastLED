@@ -13,7 +13,6 @@
 	"pulse": "off",
 	"ntp_server": "de.pool.ntp.org",
 	"mqtt_port": "1883",
-	"hostname": "Wortuhr",
 	"led1": "#000000",
 	"led2": "#000000",
 	"led3": "#000000",
@@ -27,5 +26,6 @@
 	"F": "#ff8000",
 	"G": "180",
 	"H": "60",
-	"W": "1"
+	"W": "1",
+	"GL": "1"
 }

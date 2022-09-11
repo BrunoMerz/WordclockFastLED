@@ -291,8 +291,9 @@ void checkLicense(void) {
   sprintf(license,"%.2x%.2x%.2x-%.2x%.2x%.2x",newMac[0],newMac[1],newMac[2],newMac[3],newMac[4],newMac[5]);
   boolean lp = digitalRead(LICENSE_PIN);
   DEBUG_PRINTF("License pin=%d, value=%d\n",LICENSE_PIN, lp);
-  if(lp || !myspiffs.exists("index.html")) {
+  if(lp || !myspiffs.exists("index.html") || myspiffs.getIntSetting(F("GL"))) {
     myspiffs.setSetting(F("license"),String(license));
+    myspiffs.removeSetting(F("GL"));
     myspiffs.writeSettings(true);
    } else {
     String License = myspiffs.getSetting(F("license"));
