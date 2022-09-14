@@ -221,7 +221,7 @@ int   brightness_night=0;
 bool  shutdown;
 bool  sec_flash_enabled=false;
 int   seconds_stripe=0;
-int   reset_pin=0;
+
 byte progress_x;
 int16_t x_pos_progress;
 int16_t y_pos_progress;
@@ -262,6 +262,12 @@ IconRenderer iconRenderer;
 
 int lastMinutes = -1;
 int lastSecond  = -1;
+
+
+void ICACHE_RAM_ATTR resetWiFi(void) {
+  myspiffs.writeLog(F("Got Interrupt, resetting WiFi Settings\n"));
+  mywifi.doReset();
+}
 
 #ifdef WITH_LICENSE
 /**
@@ -440,7 +446,7 @@ void handle_state(AsyncWebServerRequest *request) {
   Helper::writeState(hf,  ESP.getHeapFragmentation());
   Helper::writeState(mfbs,ESP.getMaxFreeBlockSize());
   Helper::writeState(fs,  cont_get_free_stack(g_pcont));
-  Helper::writeState(rs,  reset_pin);
+//  Helper::writeState(rs,  reset_pin);
 #endif
 
   myspiffs.closeFile();
@@ -865,9 +871,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   Serial.flush();
 #endif
 
-  pinMode(D5,OUTPUT);        // D5
-  digitalWrite(D5,0);
-  pinMode(D6,INPUT_PULLUP);  // D6
+  attachInterrupt(digitalPinToInterrupt(D8), resetWiFi, FALLING);
 
   mywifi.init();
   
@@ -952,20 +956,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   }
   WiFi.setHostname(ssid.c_str());
 #endif
-
-  pinMode(RESET_PIN, INPUT);
-  reset_pin = analogRead(RESET_PIN);
-  Serial.print(F("reset_pin A0="));
-  Serial.println(reset_pin);
-
-  DEBUG_PRINT(F("\nreset_pin A0="));
-  DEBUG_PRINTLN(reset_pin);
-  if(reset_pin >= 1023) {
-    Serial.println(F("\nResetting everything"));
-    Serial.flush();
-    delay(500);
-    mywifi.doReset();
-  }  if (ap_mode) {
+  if (ap_mode) {
 #define DNS_PORT 53
 #define DNS_NAME F("wortuhr.local")
 
@@ -1164,6 +1155,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   c = myspiffs.getRGBSetting(F("rgb"));
   display.setColor(c==-1?0xffffff:c);
   display.setBrightness();
+
 }
 
 /**

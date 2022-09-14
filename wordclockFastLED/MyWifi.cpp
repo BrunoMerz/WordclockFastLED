@@ -336,30 +336,25 @@ void MyWifi::getWifiParams(String ssid, String pass) {
   DEBUG_PRINTF("pass=%s\n",pass.c_str());
   if (pass.length() > 0) {
     int j=0;
+    _wifi_stat = -1;
+    WiFi.disconnect();
+    i=0;
+    while(i++ < 10 && _wifi_stat != WIFI_EVENT_STAMODE_DISCONNECTED) {
+      //Serial.println("Warten auf disconnect");
+      delay(100);
+    }
     while(!_got_ip) {
       DEBUG_PRINTF("WiFi.begin with, ssid=%s, passwd=%s, timeout=%d i=%d\n",ssid.c_str(), pass.c_str(), timeout, i);
-      _wifi_stat = -1;
-      WiFi.disconnect();
-      i=0;
-      while(i++ < 10 && _wifi_stat != WIFI_EVENT_STAMODE_DISCONNECTED) {
-        //Serial.println("Warten auf disconnect");
-        delay(100);
-      }
       _wifi_stat = -1;
       DEBUG_PRINTLN("vor WiFi.begin");
       WiFi.begin(ssid.c_str(), pass.c_str());
       i=0;
       while(i++ < timeout && !_got_ip) {
         // Warten auf connect oder timeout
-        DEBUG_PRINTF("_wifi_stat=%d\n", _wifi_stat);
+        DEBUG_PRINTF("_wifi_stat=%d, i=%d\n", _wifi_stat, i);
+        myspiffs.writeLog(F("Waiting for WiFi Connection\n"));
         delay(1000);
       }
-      boolean d6=digitalRead(D6);
-      DEBUG_PRINTF("nach while, _got_ip=%d, i=%d, d6=%d\n", _got_ip, i, d6);
-      if(d6)  // 
-        break;              // Löschen WiFi Einstellungen
-      if(!_got_ip)
-        myspiffs.writeLog(F("Waiting for WiFi Connection\n"));
     }
   }
   else {
