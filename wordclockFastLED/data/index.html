@@ -48,6 +48,7 @@
 							<option value="10">%Spanisch%</option>
 							<option value="11">%Portugiesisch%</option>
 							<option value="12">%Griechisch%</option>
+							<option value="13">%Arabisch%</option>
 						</select>
 					</td>
 				</tr>
@@ -289,10 +290,8 @@
 			
 			dateobj = new Date();
 			var diff = dateobj.getTimezoneOffset();
-			console.log(diff);
 			dateobj.setMinutes(dateobj.getMinutes()+(diff*-1));
 			var dt_f = dateobj.toISOString().substring(0,19);
-			console.log(dt_f);
 			oJson["time"] = dt_f;
 			
 			s = JSON.stringify(oJson);
