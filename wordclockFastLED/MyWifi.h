@@ -28,7 +28,7 @@
 #include "IconRenderer.h"
 
 #define WIFITIMEOUT 180
-#define WPSTIMEOUT  240
+#define WPSTIMEOUT  30
 
 class ESPAsync_WiFiManager;
 

@@ -35,7 +35,12 @@ void time_is_set_scheduled() {    // This function is set as the callback when t
 }
 
 MyTime::MyTime(void) {
+#if defined(ESP8266)
   settimeofday_cb(time_is_set_scheduled);
+#else
+  //settimeofday(time_is_set_scheduled);
+  //sntp_set_time_sync_notification_cb((sntp_sync_time_cb_t) time_is_set_scheduled)
+#endif
   mytm.tm_lat = 0;
   mytm.tm_lat = 0;
   mytm.tm_ntpserver = "";
@@ -62,7 +67,11 @@ void MyTime::confTime(void) {
   DEBUG_PRINTF("confTime: lng=%d\n",lng);
   DEBUG_PRINTF("confTime: echr=%c\n",*echr);
   DEBUG_PRINTF("confTime: TZ=%s, NTP=%s\n",mytm.tm_timezone.c_str(), mytm.tm_ntpserver.c_str());
+#if defined(ESP8266)
   configTime(mytm.tm_timezone.c_str(), mytm.tm_ntpserver.c_str());
+#else
+  configTzTime(mytm.tm_timezone.c_str(), mytm.tm_ntpserver.c_str());
+#endif
   myspiffs.writeLog(F("confTime: TZ="));
   myspiffs.writeLog((char *)mytm.tm_timezone.c_str(), false);
   myspiffs.writeLog(F(", NTP="), false);
@@ -73,6 +82,9 @@ void MyTime::confTime(void) {
 
 String MyTime::getTime(void) {
   char  buffer[12];
+#if defined(ESP32)
+  time_is_set_scheduled();
+#endif
   now = time(nullptr);
   lt = localtime(&now);
   

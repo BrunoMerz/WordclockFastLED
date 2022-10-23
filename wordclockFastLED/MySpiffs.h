@@ -16,12 +16,10 @@
 #include "MyDisplay.h"
 #include "MyWifi.h"
 
-#if defined(ESP8266)
-#include <LittleFS.h>
-#else
-#include <LittleFS.h>
-#endif
+#define USE_LittleFS
 #include <FS.h>
+#include <LittleFS.h>
+
 
 #define JSON_WORDCLOCK_COUNT  100
 #define JSON_WORDCLOCK_ARRAY_COUNT  1

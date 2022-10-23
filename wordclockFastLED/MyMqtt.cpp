@@ -361,7 +361,7 @@ void MyMqtt::mqtt_callback(char* topic, byte* payload, unsigned int length) {
     if (!jv.isNull()) {
       bl = jv.as<bool>();
       if(bl)
-        system_restart();
+        ESP.restart();
     }
 
     jv = mqttDoc[F("mail")][F("icon")];

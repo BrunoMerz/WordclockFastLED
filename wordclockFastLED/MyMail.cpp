@@ -13,7 +13,7 @@
    Receive/Send Email
 */
 
-#define myDEBUG
+//#define myDEBUG
 #include "Debug.h"
 
 #include "Configuration.h"

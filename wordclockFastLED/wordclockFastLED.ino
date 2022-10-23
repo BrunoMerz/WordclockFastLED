@@ -83,6 +83,9 @@ const char compile_date[] = __DATE__ " " __TIME__;
 #include <cont.h>
 #else
 #include <WiFi.h>
+extern "C" {
+#include <esp_wifi.h>
+}
 #include "esp_wps.h"
 #include <ESPmDNS.h>
 #include <LittleFS.h>
@@ -222,11 +225,12 @@ bool  shutdown;
 bool  sec_flash_enabled=false;
 int   seconds_stripe=0;
 
-byte progress_x;
+byte    progress_x;
 int16_t x_pos_progress;
 int16_t y_pos_progress;
-bool nightOn=false;
-bool  ap_mode = false;
+bool    nightOn = false;
+bool    ap_mode = false;
+bool    power   = true;
 
 uint8_t LedStripeDataPin = LED_STRIPE_DATA_PIN;
 
@@ -627,43 +631,6 @@ void handle_getSettings(AsyncWebServerRequest *request) {
 }
 
 
-void handle_saveExpertSettings(AsyncWebServerRequest *request){
-  DEBUG_PRINTLN("handle_saveExpertSettings: #params="+String(request->params()));
-  for(int i=0;i<request->params();i++) {
-    AsyncWebParameter* p = request->getParam(i);
-    String value = p->value();
-    String name = p->name();
-    DEBUG_PRINTLN("handle_saveExpertSettings: name="+name+", value="+value);
-    if(name == F("hostname") && value != myspiffs.getSetting(F("hostname"))) {
-      reason=0;
-      reboot = true;
-    }
-    if(name == F("time_zone") && value != mytm.tm_timezone) {
-      mytm.tm_timezone = value;
-      timezoneChanged = true;
-    }
-    if(name == F("ntp_server") && value != mytm.tm_ntpserver) {
-      mytm.tm_ntpserver = value;
-      timezoneChanged = true;
-    }
-     if(name == F("latitude") && value.toDouble() != mytm.tm_lat) {
-      mytm.tm_lat = value.toDouble();
-      timezoneChanged = true;
-    }    
-    if(name == F("longitude") && value.toDouble() != mytm.tm_lon) {
-      mytm.tm_lon = value.toDouble();
-      timezoneChanged = true;
-    }
- 
-    myspiffs.setSetting(name, value);
-    
-  }
-  myspiffs.writeSettings(true);
-  lastMinutes = -1;
-  request->redirect("/expert");
-}
-
-
 void handle_format(AsyncWebServerRequest *request) {
     DEBUG_PRINTLN("handle_format called");
     myspiffs.format();
@@ -776,37 +743,6 @@ void handle_doArgs(AsyncWebServerRequest *request) {
   request->redirect(redir);
 }
 
-/*
-void handle_onBody(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-  if(!index)
-    bodyData="";
-
-  for(int i=0; i<len; i++)
-    bodyData += (char)*(data+i);
-
-  if(index+len == total) {
-    myspiffs.setSettings(bodyData);
-    COLOR_T c = myspiffs.getRGBSetting(F("rgb"));
-    display.setColor(c);
-    display.setBrightness();
-
-    String s = myspiffs.getSetting(F("nighton"));
-    night_on.setHours(s.substring(0, 2).toInt());
-    night_on.setMinutes(s.substring(3).toInt());
-
-    s = myspiffs.getSetting(F("nightoff"));
-    night_off.setHours(s.substring(0, 2).toInt());
-    night_off.setMinutes(s.substring(3).toInt());
-
-    sec_flash_enabled = myspiffs.getBoolSetting(F("sec_flash_enabled"));
-    seconds_stripe = myspiffs.getIntSetting(F("seconds_stripe"));
-
-    lastMinutes = -1;
-    bodyData="";
-  }
-  request->send(200, textPlain, "OK");
-}
-*/
 
 String getHostname(String *hn) {
   *hn=myspiffs.getSetting(F("hostname"));
@@ -862,7 +798,11 @@ pinMode(ESP_PIN_3, FUNCTION_3);
 #endif
 
 #ifdef WITH_LICENSE
-  pinMode(LICENSE_PIN, INPUT_PULLDOWN_16);
+  #if defined(ESP8266)
+    pinMode(LICENSE_PIN, INPUT_PULLDOWN_16);
+  #else
+    pinMode(LICENSE_PIN, INPUT_PULLDOWN);
+  #endif
 #endif
 
   DEBUG_PRINTLN(F("... and starting in debug-mode..."));
@@ -871,7 +811,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   Serial.flush();
 #endif
 
-  attachInterrupt(digitalPinToInterrupt(D8), resetWiFi, FALLING);
+  attachInterrupt(digitalPinToInterrupt(WIFI_RESET), resetWiFi, FALLING);
 
   mywifi.init();
   
@@ -924,7 +864,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
 #endif
 
   // initialize LED driver
-  display.init(LedStripeDataPin, sec_flash_enabled?LED_STRIPE_COUNT+1:LED_STRIPE_COUNT);
+  display.init(LedStripeDataPin, LED_STRIPE_COUNT);
 
   // clear renderer matrix
   renderer.clearScreenBuffer(matrix);
@@ -956,7 +896,9 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   }
   WiFi.setHostname(ssid.c_str());
 #endif
+
   if (ap_mode) {
+#if defined(ESP8266)
 #define DNS_PORT 53
 #define DNS_NAME F("wortuhr.local")
 
@@ -968,6 +910,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
     WiFi.softAPConfig(local_IP, gateway, subnet);
     WiFi.softAP(CONFIG_PORTAL_SSID, "wortuhr", 1, false, 2); // ssid, psk, channel, hidden, max_connection
     dns1.start(DNS_PORT, DNS_NAME, local_IP);
+#endif
   } else {
     if (myspiffs.getSetting(F("wifi_ssid")).length() && myspiffs.getSetting(F("wifi_pass")).length()) {
       mywifi.getWifiParams(myspiffs.getSetting(F("wifi_ssid")), myspiffs.getSetting(F("wifi_pass")));
@@ -1009,11 +952,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
 
   server.on("/getSettings", HTTP_GET, handle_getSettings);    // get all setting values
 
-  server.on("/saveExpertSettings", HTTP_POST, handle_saveExpertSettings);  // save expert setting values
-  
   server.on("/saveSettings", HTTP_POST, [](AsyncWebServerRequest * request){}, NULL, [](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
-
-    
     if(!index)
       bodyData="";
   
@@ -1078,6 +1017,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
     }
     request->send(200, textPlain, "OK");
   });
+  // Ende saveSettings
 
   server.on("/format", HTTP_GET, handle_format);              // format LittleFS
 
@@ -1086,9 +1026,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   server.on("/show_icon", HTTP_GET, handle_showIcon);         // show an icon
 
   server.on("/seen", HTTP_GET, handle_seen);         // show an icon
-
-//  server.onRequestBody(handle_onBody);
-  
+ 
 #ifdef WITH_MQTT
   server.on("/mqttenable",  HTTP_GET, handle_mqttEnable);     // enable MQTT
   server.on("/mqttdisable", HTTP_GET, handle_mqttDisable);    // disable MQTT
@@ -1192,12 +1130,22 @@ pinMode(ESP_PIN_3, FUNCTION_3);
     }
 #endif
 
-
+//uint32_t last_millis=0;
 /*
    handle loop
 */
 void loop()
 {
+  /*
+  uint32_t new_millis=millis();
+  if(last_millis) {
+    if(last_millis+50<new_millis) {
+      Serial.print("check loop time, last duration=");
+      Serial.println(new_millis-last_millis);
+    }
+  }
+  last_millis = new_millis;
+  */
   if(uploadStarted)
     return;
   if(uploadFilename.length()) {
@@ -1214,9 +1162,14 @@ void loop()
   }
  
   if(reboot) {
-    if(reason==1)
+    if(reason==1) {
+#if defined(ESP8266)
       system_restore();
-     ESP.restart();
+#else
+      esp_wifi_restore();
+#endif
+    }
+    ESP.restart();
   }
     
 
@@ -1241,12 +1194,11 @@ void loop()
 
   if(timezoneChanged) {
     timezoneChanged = false;
+    mytm.tm_lat=0;  // damit die Uhrzeit in confTime neu eingestellt wird
     mytime.confTime();
     adjb.init();
     adjb.forceUpdate();
   }
-  
-  delay(300);
 
   mytime.getTime(&mytm);
 
@@ -1259,7 +1211,7 @@ void loop()
     DEBUG_FLUSH();
     if(WiFi.status() != WL_CONNECTED) {
       WiFi.disconnect();
-      WiFi.begin(myspiffs.getSetting(F("wifi_ssid")), myspiffs.getSetting(F("wifi_pass")));
+      WiFi.begin(myspiffs.getSetting(F("wifi_ssid")).c_str(), myspiffs.getSetting(F("wifi_pass")).c_str());
       myspiffs.writeLog(F("Lost Wifi connection, try to reconnect\n"));
     }
 
@@ -1291,7 +1243,7 @@ void loop()
     else
       brightness_night = 0;
 
-    bool power = myspiffs.getBoolSetting(F("power"));
+    power = myspiffs.getBoolSetting(F("power"));
     if(!power || shutdown) {
       if(!power || brightness_night <= 0)
         display.clear();
@@ -1364,9 +1316,10 @@ void loop()
     }
   }
 
+  // seconds_stripe==1 => einzelne LED für das Sekunden blinken
   if(seconds_stripe==1 && sec_flash_enabled) {
     DEBUG_PRINTLN("seconds_stripe==1 && sec_flash_enabled");
-    if(mytm.tm_sec != lastSecond && !shutdown) {
+    if(mytm.tm_sec != lastSecond && !shutdown && power) {
       if(mytm.tm_sec % 2) {
         COLOR_T c = display.getColor();
         display.drawPixel(4, 10, c);

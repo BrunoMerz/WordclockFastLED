@@ -20,7 +20,7 @@ extern MyWifi mwifi;
 extern MySpiffs myspiffs;
 extern IconRenderer iconRenderer;
 
-#define USE_LITTLEFS               true
+#define USE_LITTLEFS
 #define USING_CORS_FEATURE         true
  
 #define USE_ESP_WIFIMANAGER_NTP    false
@@ -32,6 +32,7 @@ extern IconRenderer iconRenderer;
 
 extern AsyncWebServer server;
 extern AsyncDNSServer dns1;
+extern String ip;
 
 ESPAsync_WiFiManager wifiManager(&server, &dns1);
 static boolean  _wpsSuccess;
@@ -41,6 +42,8 @@ static int      _wifi_stat;
 
 
 #if defined(ESP32)
+
+#include "esp_wps.h"
 
 static esp_wps_config_t config;
 
@@ -78,6 +81,7 @@ boolean wpsStart(void) {
       break;
     }
     delay(1000);
+    DEBUG_PRINTF("Waiting for IP, i=%d\n",i);
   }
   if(!_wpsSuccess) {
     DEBUG_PRINTLN("WPS WiFi failed");
@@ -87,44 +91,43 @@ boolean wpsStart(void) {
 }
 
 
-void WiFiEvent(WiFiEvent_t event, system_event_info_t info){
-  DEBUG_PRINT("Got WiFiEvent: ");
-  DEBUG_PRINTLN(event);
+void WiFiEvent(WiFiEvent_t event, arduino_event_info_t info){
   switch(event){
-    case SYSTEM_EVENT_STA_START:
+    case ARDUINO_EVENT_WIFI_STA_START:
       DEBUG_PRINTLN("Station Mode Started");
       break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-      DEBUG_PRINTLN("Connected to :" + String(wifiManager.getSSID()));
-      DEBUG_PRINT("Got IP: ");
-      DEBUG_PRINTLN(WiFi.localIP());
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+      ip = WiFi.localIP().toString();
+      DEBUG_PRINTLN("Connected to :" + String(WiFi.SSID()));
+      DEBUG_PRINT("GOT_IP: ");
+      DEBUG_PRINTLN(ip);
+      myspiffs.writeLog(F("WiFi GOT_IP: "));
+      myspiffs.writeLog((char *)ip.c_str(), false);
+      myspiffs.writeLog(F("\n"), false);
+      _got_ip = true;
       break;
-    case SYSTEM_EVENT_STA_CONNECTED:
-      DEBUG_PRINTLN("Connected to station");
-      break;
-    case SYSTEM_EVENT_STA_DISCONNECTED:
+    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
       DEBUG_PRINTLN("Disconnected from station, attempting reconnection");
-      WiFi.disconnect();
       WiFi.reconnect();
       break;
-    case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
+    case ARDUINO_EVENT_WPS_ER_SUCCESS:
       DEBUG_PRINTLN("WPS Successfull, stopping WPS and connecting to: " + String(WiFi.SSID()));
       wpsStop();
       delay(10);
       WiFi.begin();
       break;
-    case SYSTEM_EVENT_STA_WPS_ER_FAILED:
+    case ARDUINO_EVENT_WPS_ER_FAILED:
       DEBUG_PRINTLN("WPS Failed, retrying");
       wpsStop();
       wpsStart();
       break;
-    case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
+    case ARDUINO_EVENT_WPS_ER_TIMEOUT:
       DEBUG_PRINTLN("WPS Timedout, retrying");
       wpsStop();
       wpsStart();
       break;
-    case SYSTEM_EVENT_STA_WPS_ER_PIN:
-      DEBUG_PRINTLN("WPS_PIN = " + wpspin2string(info.sta_er_pin.pin_code));
+    case ARDUINO_EVENT_WPS_ER_PIN:
+      DEBUG_PRINTLN("WPS_PIN = " + wpspin2string(info.wps_er_pin.pin_code));
       break;
     default:
       break;
@@ -132,16 +135,16 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info){
 }
 
 
-void wpsInitConfig(void) {
+void wpsInitConfig(){
   config.wps_type = ESP_WPS_MODE;
-  config.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
   strcpy(config.factory_info.manufacturer, ESP_MANUFACTURER);
   strcpy(config.factory_info.model_number, ESP_MODEL_NUMBER);
   strcpy(config.factory_info.model_name, ESP_MODEL_NAME);
   strcpy(config.factory_info.device_name, ESP_DEVICE_NAME);
 }
 
-#else //ESP8266
+
+#else // ESP8266
 
 void WiFiEvent(WiFiEvent_t event) {
   _wifi_stat = event;
@@ -158,11 +161,12 @@ void WiFiEvent(WiFiEvent_t event) {
       DEBUG_PRINTLN("Author mode change");
       break;
     case WIFI_EVENT_STAMODE_GOT_IP:           // 3
+      ip = WiFi.localIP().toString();
       DEBUG_PRINTLN("WiFi GOT_IP");
       DEBUG_PRINTLN("IP address: ");
-      DEBUG_PRINTLN(WiFi.localIP());
+      DEBUG_PRINTLN(ip);
       myspiffs.writeLog(F("WiFi GOT_IP: "));
-      myspiffs.writeLog((char *)WiFi.localIP().toString().c_str(), false);
+      myspiffs.writeLog((char *)ip.c_str(), false);
       myspiffs.writeLog(F("\n"), false);
       _got_ip = true;
       break;
@@ -241,7 +245,7 @@ bool MyWifi::myStartWPS(void) {
 
 bool MyWifi::myStartWPS(void) {
   DEBUG_PRINTLN("WPS Konfiguration gestartet");
-  myspiffs.writeLog(F("WPS Konfiguration gestartet"));
+  myspiffs.writeLog(F("WPS Konfiguration gestartet\n"));
   _wpsSuccess = true;
   WiFi.onEvent(WiFiEvent);
   WiFi.mode(WIFI_MODE_STA);
@@ -339,7 +343,11 @@ void MyWifi::getWifiParams(String ssid, String pass) {
     _wifi_stat = -1;
     WiFi.disconnect();
     i=0;
+#if defined(ESP8266)
     while(i++ < 10 && _wifi_stat != WIFI_EVENT_STAMODE_DISCONNECTED) {
+#else
+    while(i++ < 10 && _wifi_stat != SYSTEM_EVENT_STA_DISCONNECTED) {
+#endif
       //Serial.println("Warten auf disconnect");
       delay(100);
     }
@@ -361,6 +369,7 @@ void MyWifi::getWifiParams(String ssid, String pass) {
     timeout = WIFITIMEOUT;
     iconRenderer.renderAndDisplay(F("/accesspoint.ico"),500,1);
     DEBUG_PRINTF("setConfigPortalTimeout timeout=%i\n", timeout);
+    Serial.println(F("Starting Accesspoint"));
     wifiManager.setConfigPortalTimeout(timeout);
     wifiManager.setConfigPortalChannel(0);
     ret = wifiManager.startConfigPortal(ssid.c_str());

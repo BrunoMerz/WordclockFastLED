@@ -28,7 +28,8 @@
 #define LANGUAGE_ES    10
 #define LANGUAGE_PT    11
 #define LANGUAGE_GR    12
-#define LANGUAGE_COUNT 12
+#define LANGUAGE_AE    13
+#define LANGUAGE_COUNT 13
 
 class Renderer {
   public:

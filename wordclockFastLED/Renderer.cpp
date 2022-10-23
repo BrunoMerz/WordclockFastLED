@@ -27,6 +27,7 @@ extern MYTM mytm;
 #include "Woerter_ES.h"
 #include "Woerter_PT.h"
 #include "Woerter_GR.h"
+#include "Woerter_AE.h"
 
 
 Renderer::Renderer(void) {
@@ -816,6 +817,87 @@ void Renderer::setMinutes(byte hours, byte minutes, word matrix[16]) {
       }
       break;
 #endif
+#ifdef SPRACHE_AE
+    //
+    // Arabische Emirate
+    //
+    case LANGUAGE_AE:
+      if (_esist) {
+        AE_ES;
+        AE_IST;
+      }
+
+      switch (minutes_5) {
+        case 0:
+          // glatte Stunde
+          setHours(hours, 0, language, matrix);
+          break;
+        case 1:
+          // 5 nach
+          AE_PLUS_FUENF;
+          AE_MINUTEN;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 2:
+          // 10 nach
+          AE_PLUS_ZEHN;
+          AE_MINUTEN;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 3:
+          // viertel nach
+          AE_PLUS_VIERTEL;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 4:
+          // 20 nach
+          AE_PLUS_DRITTEL;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 5:
+          // 5 vor halb
+          AE_PLUS_DRITTEL;
+          AE_PLUS_FUENF;
+          AE_MINUTEN;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 6:
+          // halb
+          AE_HALB;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 7:
+          // 5 nach halb
+          AE_HALB;
+          AE_PLUS_FUENF;
+          AE_MINUTEN;
+          setHours(hours, 3, language, matrix);
+          break;
+        case 8:
+          // 20 vor
+          AE_MINUS_DRITTEL;
+          setHours(hours + 1, 3, language, matrix);
+          break;
+        case 9:
+          // viertel vor
+          AE_MINUS_VIERTEL;
+          setHours(hours + 1, 3, language, matrix);
+          break;
+        case 10:
+          // 10 vor
+          AE_MINUS_ZEHN;
+          AE_MINUTEN;
+          setHours(hours + 1, 3, language, matrix);
+          break;
+        case 11:
+          // 5 vor
+          AE_MINUS_FUENF;
+          AE_MINUTEN;
+          setHours(hours + 1, 3, language, matrix);
+          break;
+      }
+      break;
+#endif
   }
 }
 
@@ -1330,6 +1412,51 @@ void Renderer::setHours(byte hours, byte glatt_vor_nach, byte language, word mat
           break;
         case 11:
           GR_H_ENTEKA;
+          break;
+      }
+      break;
+#endif
+#ifdef SPRACHE_AE
+    //
+    // Arabische Emirate
+    //
+    case LANGUAGE_AE:
+      switch (hours12) {
+        case 0:
+          AE_H_ZWOELF;
+          break;
+        case 1:
+          AE_H_EIN;
+          break;
+        case 2:
+          AE_H_ZWEI;
+          break;
+        case 3:
+          AE_H_DREI;
+          break;
+        case 4:
+          AE_H_VIER;
+          break;
+        case 5:
+          AE_H_FUENF;
+          break;
+        case 6:
+          DE_H_SECHS;
+          break;
+        case 7:
+          AE_H_SIEBEN;
+          break;
+        case 8:
+          AE_H_ACHT;
+          break;
+        case 9:
+          AE_H_NEUN;
+          break;
+        case 10:
+          AE_H_ZEHN;
+          break;
+        case 11:
+          AE_H_ELF;
           break;
       }
       break;

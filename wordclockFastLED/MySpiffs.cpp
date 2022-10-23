@@ -90,7 +90,7 @@ bool MySpiffs::writeSettings(bool saveConfig) {
     DEBUG_PRINTLN();
 #endif
     serializeJson(jsonDoc, configFile);
-    configFile.write("\n",1);
+    configFile.println();
     DEBUG_PRINTLN("Closing configFile");
     configFile.flush();
     configFile.close();
@@ -462,7 +462,9 @@ String MySpiffs::getState(void) {
       Helper::writeState(st);
       Helper::writeState(cb);
     } else {
-      writeFile((char *)kv.value().as<char *>());
+      if(kv.value().as<char *>()) {
+        writeFile((char *)kv.value().as<char *>());
+      }
       Helper::writeState(cb);
     }
   }
@@ -470,15 +472,25 @@ String MySpiffs::getState(void) {
   Helper::writeState(files);
 
 #if defined(ESP32)
-  File root = LittleFS.open("/");
-  file = root.openNextFile();
+  File rt = LittleFS.open("/");
+  file = rt.openNextFile();
   while (file) {
     sprintf(txt,"%-20s", file.name());
     Helper::writeState(nl, txt);
-    Helper::writeState(sz, file.size());
-    Helper::writeState(nl);
+    sprintf(txt,"%.6d", file.size());
+    Helper::writeState(sz, txt);
+    //time_t cr = file.getCreationTime();
+    time_t lw = file.getLastWrite();
+
+    //struct tm * tmstruct = localtime(&cr);
+    //sprintf(txt,"%d-%02d-%02d %02d:%02d:%02d", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+    //Helper::writeState(ce, txt);
+    struct tm * tmstruct = localtime(&lw);
+    sprintf(txt,"%d-%02d-%02d %02d:%02d:%02d", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+    Helper::writeState(la, txt);
+
     total+=file.size();
-    file = root.openNextFile();
+    file = rt.openNextFile();
   }
   Helper::writeState(az, total);
   Helper::writeState(tb, LittleFS.totalBytes());
@@ -519,9 +531,13 @@ String MySpiffs::getState(void) {
 }
 
 uint32_t MySpiffs::getFreeSpace(void) {
+#if defined(ESP8266)
   FSInfo fs_info;
   LittleFS.info(fs_info);
   return fs_info.totalBytes-fs_info.usedBytes;
+#else
+  return LittleFS.totalBytes()-LittleFS.usedBytes();
+#endif
 }
 
 
@@ -529,9 +545,9 @@ uint32_t MySpiffs::getFreeSpace(void) {
    getLanguage
 */
 String MySpiffs::getLanguage(void) {
-  const static char languages[][3] PROGMEM = {"de","de","de","de","ch","gb","gb","fr","it","nl","es","pt","gr"};
+  const static char languages[][3] PROGMEM = {"de","de","de","de","ch","gb","gb","fr","it","nl","es","pt","gr","ae"};
   int lang = getIntSetting(F("language"));
-  if(lang<0 || lang > 12)
+  if(lang<0 || lang > LANGUAGE_COUNT)
     lang = 0;
   strcpy_P(_lang, &(languages[lang][0]));
   return _lang;
@@ -649,13 +665,13 @@ void MySpiffs::writeLog(char *txt, boolean withDateTime) {
     }
     if(withDateTime) {
       String t =  mytime.getDate();
-      logHandle.write(t.substring(0, t.length()-1).c_str());
-      logHandle.write(": ");
+      logHandle.print(t.substring(0, t.length()-1).c_str());
+      logHandle.print(": ");
       t =  mytime.getTime();
-      logHandle.write(t.c_str());
-      logHandle.write(": ");
+      logHandle.print(t.c_str());
+      logHandle.print(": ");
     }
-    logHandle.write(txt,strlen(txt));
+    logHandle.print(txt);
     logHandle.flush();
     logHandle.close();
   }

@@ -13,8 +13,10 @@
 
 #include "MySpiffs.h"
 
+#if defined(ESP8266)
 #include <coredecls.h>                  // settimeofday_cb()
 #include <PolledTimeout.h>
+#endif
 
 #include <time.h>                       // time() ctime()
 #include <sys/time.h>                   // struct timeval

@@ -14,7 +14,7 @@
 
 #include <Arduino.h>
 
-#define FIRMWARE  "V7.0"
+#define FIRMWARE  "V7.1"
 
 
 /**
@@ -29,6 +29,7 @@
 #define SPRACHE_ES
 #define SPRACHE_PT
 #define SPRACHE_GR
+#define SPRACHE_AE
 
 
 #define WITH_ALEXA
@@ -138,6 +139,7 @@ enum MatrixType_t { HORIZONTAL_MATRIX,
 #define LED_PIN 2                       // buildin LED ESP32
 #define ESP_PIN_1 1                     // Tx
 #define ESP_PIN_3 3                     // Rx
+#define WIFI_RESET 15
 #endif                                  // ESP32
 
 #if defined(ARDUINO_ESP8266_GENERIC)
@@ -178,6 +180,7 @@ enum MatrixType_t { HORIZONTAL_MATRIX,
 #define LED_PIN D4                      // LED_BUILTIN D4
 #define ESP_PIN_1 TX                    // Tx
 #define ESP_PIN_3 RX                    // Rx
+#define WIFI_RESET D8
 #endif                                  // ARDUINO_ESP8266_WEMOS_D1MINI
 
 typedef struct mytm
