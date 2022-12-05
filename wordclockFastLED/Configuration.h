@@ -14,7 +14,7 @@
 
 #include <Arduino.h>
 
-#define FIRMWARE  "V7.1"
+#define FIRMWARE  "V7.2"
 
 
 /**

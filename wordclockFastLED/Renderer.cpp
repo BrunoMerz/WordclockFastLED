@@ -56,6 +56,45 @@ void Renderer::showTime(word matrix[16]) {
 }
 
 /**
+   Display two charcaters
+    000000 000000
+    011100 011100
+    100010 100010
+    000100 000100
+    001000 001000
+    010000 010000
+    100000 100000
+    111110 111110
+    000000 000000
+    000000 000000
+*/
+void Renderer::display2Chars(char *c) {
+  uint8_t breite=pgm_read_byte(&(TickerZeichen[*c - ' '][10]));
+  uint8_t x_offset=5-breite;
+  if(x_offset==2)
+    x_offset=1;
+  if(*(c+1)==' ')
+    x_offset += 3;
+  display.clear();
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 10; j++) {
+      word bitArray = pgm_read_byte(&(TickerZeichen[*(c+i) - ' '][j]));
+      for (int k = 0; k < breite; k++) {
+        word b = bitArray;
+        b >>= (7 - k);
+        b &= 1;
+        if(b)
+          display.drawPixel(k+x_offset, j, 0xffffff);
+      }
+    }
+    breite = 5;
+    x_offset=6;
+  }
+  display.show();
+}
+
+
+/**
    clear matrix
 
 */

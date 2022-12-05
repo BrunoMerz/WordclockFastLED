@@ -1156,10 +1156,11 @@ void Effekte::displayEffect24(void) {
 
 
 /**
-   Display Effect 25
+   Display Effect 25, Feuerwerk
 */
 void Effekte::displayEffect25(void) {
   COLOR_T rgb=0xffffff;
+  int br;
   
   int arr[68][2]={
     {5,9},
@@ -1240,27 +1241,57 @@ void Effekte::displayEffect25(void) {
   };
 
   _showTime=false;
-  display.clear();
   
-  for(int i=0;i<68;i++) {
-    int x=arr[i][0];
-    int y=arr[i][1];
-    long rnd=0;
-    if(x==5 && y==9) {
-      rnd=random(0,360);
-      rgb=display.getRGBColor(rnd*182.04);
+  for(int z=0;z<3;z++) {
+    br=99;
+    display.clear();
+    display.setBrightness(br);
+    for(int i=0;i<68;i++) {
+      int x=arr[i][0];
+      int y=arr[i][1];
+      long rnd=0;
+      if(x==5 && y==9) {
+        rnd=random(0,360);
+        rgb=display.getRGBColor(rnd*182.04);
+      }
+      turnLedOnOff(x, y, LEDON, DELAY50, true, rnd, rgb);
     }
-    turnLedOnOff(x, y, LEDON, DELAY50, true, rnd, rgb);
+    // verschieben
+    for(int z=0;z<9;z++) {
+      for(int y=9;y>z;y--) {
+        br -= 4;
+        if(br<0) br=1;
+        display.setBrightness(br);
+        for(int x=0;x<11;x++) {
+          COLOR_T c=display.getPixelColor(x,y-1);
+          if(c)
+            display.drawPixel(x,y,c);
+          else
+            display.clearPixel(x,y);
+        }
+      }
+      // Oberste Zeile löschen
+      for(int x=0;x<11;x++)
+        display.clearPixel(x,z);
+      display.show();
+      delay(200);
+    }
+    // Letzte Zeile löschen
+    for(int x=0;x<11;x++)
+        display.clearPixel(x,9);
+    display.show();
   }
   delay(2000);
   
-  // clear all LEDs
+  // clear all LEDs with standard brightness
+  display.setBrightness(0);
   _showTime=true;
-  for(int x=0;x<11;x++) {
-    for(int y=0; y<10; y++) {
+  for(int y=0; y<10; y++) {
+    for(int x=0;x<11;x++) {
       turnLedOnOff(x, y, LEDOFF, DELAY50, true, 0, 0);
     }
   }
+  
 }
 
 

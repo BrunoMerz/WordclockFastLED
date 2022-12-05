@@ -48,6 +48,7 @@ class Renderer {
     void setAllScreenBuffer(word matrix[16]);
 
     void writeScreenBufferToMatrix(word matrix[16], bool singleLedDisplay);
+    void display2Chars(char *c);
 
   private:
     void setHours(byte hours, byte glatt_vor_nach, byte language, word matrix[16]);

@@ -123,9 +123,6 @@ extern "C" {
   DCF77Helper dcf77Helper;
 #endif
 
-#if defined(WORDCLOCK_DEBUG)
-aa bb
-#endif
 
 /*
    Handling webserver
@@ -231,6 +228,7 @@ int16_t y_pos_progress;
 bool    nightOn = false;
 bool    ap_mode = false;
 bool    power   = true;
+bool    testMode= false;
 
 uint8_t LedStripeDataPin = LED_STRIPE_DATA_PIN;
 
@@ -343,6 +341,11 @@ void handle_notfound(AsyncWebServerRequest *request) {
   {
 #endif
     DEBUG_PRINTLN("handle_notfound: "+msg+" not found");
+    if(msg=="/test") {
+      lastMinutes=-1;
+      testMode=true;
+      request->send(200, textPlain, "OK");
+    }
     if(myspiffs.exists(request->url())) {
       if(msg.endsWith(F(".htm")) || msg.endsWith(F(".html")) || msg.endsWith(F(".log")))
         request->send(LittleFS, msg, String(), false, processor);
@@ -1215,6 +1218,23 @@ void loop()
       myspiffs.writeLog(F("Lost Wifi connection, try to reconnect\n"));
     }
 
+    // Happy new year, each 31.12.xxxx 23:59 or if testMode ist on
+    //
+    if((mytm.tm_mon==12 && mytm.tm_mday==31 && mytm.tm_hour==23 && mytm.tm_min==59) || testMode) {
+      if(testMode)
+        testMode = false;
+      char tmp[10];
+      for(int i=59;i>=0;i--) {
+        itoa(i, tmp, 10);
+        if(i<10)
+          tmp[1]=' ';
+        renderer.display2Chars(tmp);
+        delay(1000);
+      }
+      effekte.displayEffekt(24);
+    }
+
+    
     /**
        check if night shutdown 21:00-05:00 cur: 22:00
         on < off ==> cur > on && akt <= off
