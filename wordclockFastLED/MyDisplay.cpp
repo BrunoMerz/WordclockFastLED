@@ -299,14 +299,14 @@ uint16_t MyDisplay::getDegree(uint16_t y, uint16_t x) {
 
   
   // Ankathete und Gegenkathete berechnen
-  if(y>10) {
+  if(y>9) {
     // ledStripeCount = 114, standard ohne Sekundenzeiger ohne Sekunden Blinker
     // ledStripeCount = 115 oder 174 mit Sekunden Blinker
     // ledStripeCount = 173 ohne Sekunden Blinker mit Sekundenzeiger
     // y>10 =>  11 = Sekunden LED oder Sekunden Blinker
     // mit Sekunden Blinker x=1 bei Sekunde 1 usw. => num = 1
-    // ohne Sekunden Blinker x=0 bei Sekunde 1 usw. => num = 1
-    byte num = y*11+x-120;
+    // ohne Sekunden Blinker x=0 bei Sekunde 1 usw. => num = 114-113 = 1
+    byte num = y*11+x-113;    // y=10, X=4 => num=
     if(_ledStripeCount==115 || _ledStripeCount==174)
       num--;
     x=pgm_read_byte(&(coorMap[num][0]));

@@ -161,6 +161,13 @@ void MyMqtt::mqtt_callback(char* topic, byte* payload, unsigned int length) {
   DEBUG_PRINTLN("]");
   DEBUG_FLUSH();
 
+  char c[2]="X";
+  for(int i=0;i<length;i++) {
+    c[0] = *(payload+i);
+    myspiffs.writeLog(c,i?false:true);
+  }
+  myspiffs.writeLog("\n",false);
+
   mqttDoc.clear();
   DeserializationError error = deserializeJson(mqttDoc, payload, length);
   if (!error) {
@@ -308,8 +315,7 @@ void MyMqtt::mqtt_callback(char* topic, byte* payload, unsigned int length) {
   
         if(b<0) b=0;
         if(b>100) b=100;
-          
-        //myspiffs.setSetting(F("brightness"),(String)b);
+
         display.setBrightness(b);
       }
   
@@ -322,11 +328,13 @@ void MyMqtt::mqtt_callback(char* topic, byte* payload, unsigned int length) {
   
         myspiffs.setSetting(F("brightness_night"),(String)b);
       }
+      /*
       int bip=myspiffs.getIntSetting(F("brightness_to")) + myspiffs.getIntSetting(F("brightness_from"));
       bip /= 2;
       DEBUG_PRINTF("mqtt_callback: bip=%d\n",bip);
       display.setBrightness(bip);
       display.getBrightness();
+      */
     }
     
     jv = mqttDoc[F("effect")];

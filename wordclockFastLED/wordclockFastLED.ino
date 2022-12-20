@@ -266,10 +266,10 @@ int lastMinutes = -1;
 int lastSecond  = -1;
 
 
-void ICACHE_RAM_ATTR resetWiFi(void) {
-  myspiffs.writeLog(F("Got Interrupt, resetting WiFi Settings\n"));
-  mywifi.doReset();
-}
+//void ICACHE_RAM_ATTR resetWiFi(void) {
+//  myspiffs.writeLog(F("Got Interrupt, resetting WiFi Settings\n"));
+//  mywifi.doReset();
+//}
 
 #ifdef WITH_LICENSE
 /**
@@ -645,13 +645,7 @@ void handle_format(AsyncWebServerRequest *request) {
 
 void handle_resetWiFi(AsyncWebServerRequest *request) {
     DEBUG_PRINTLN("reset_wifi called");
-    DEBUG_FLUSH();
-    myspiffs.removeSetting(F("wifi_ssid"));
-    myspiffs.removeSetting(F("wifi_pass"));
-    myspiffs.writeSettings(true);
-    request->redirect("/");
-    reason=1;
-    reboot=true;
+    mywifi.doReset();
 }
 
 
@@ -814,7 +808,8 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   Serial.flush();
 #endif
 
-  attachInterrupt(digitalPinToInterrupt(WIFI_RESET), resetWiFi, FALLING);
+  //attachInterrupt(digitalPinToInterrupt(WIFI_RESET), resetWiFi, FALLING);
+  pinMode(WIFI_RESET, INPUT_PULLDOWN_16);
 
   mywifi.init();
   
@@ -855,7 +850,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
    *  sec_flash_enabled: Sekundenanzeige ein/aus
    */
   seconds_stripe = myspiffs.getIntSetting(F("seconds_stripe"));
-  sec_flash_enabled = myspiffs.getBoolSetting(F("sec_flash"));
+  sec_flash_enabled = myspiffs.getBoolSetting(F("sec_flash_enabled"));
   
 
 #ifndef WITH_AUDIO
@@ -1163,7 +1158,12 @@ void loop()
     }
     uploadFilename = "";
   }
- 
+
+  if(digitalRead(WIFI_RESET)) {
+    myspiffs.writeLog(F("Got Interrupt, resetting WiFi Settings\n"));
+    mywifi.doReset();
+  }
+
   if(reboot) {
     if(reason==1) {
 #if defined(ESP8266)

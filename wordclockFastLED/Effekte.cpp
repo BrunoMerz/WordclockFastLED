@@ -1282,7 +1282,7 @@ void Effekte::displayEffect25(void) {
     display.show();
   }
   delay(2000);
-  
+
   // clear all LEDs with standard brightness
   display.setBrightness(0);
   _showTime=true;
@@ -1291,7 +1291,6 @@ void Effekte::displayEffect25(void) {
       turnLedOnOff(x, y, LEDOFF, DELAY50, true, 0, 0);
     }
   }
-  
 }
 
 

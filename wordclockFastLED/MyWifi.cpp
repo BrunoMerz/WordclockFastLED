@@ -22,12 +22,14 @@ extern IconRenderer iconRenderer;
 
 #define USE_LITTLEFS
 #define USING_CORS_FEATURE         true
- 
+
 #define USE_ESP_WIFIMANAGER_NTP    false
 #define USE_CLOUDFLARE_NTP         false
- 
-#define USE_STATIC_IP_CONFIG_IN_CP false  
- 
+
+#define USE_STATIC_IP_CONFIG_IN_CP false
+
+//#define _ESPASYNC_WIFIMGR_LOGLEVEL_ 4
+
 #include <ESPAsync_WiFiManager.h>
 
 extern AsyncWebServer server;
@@ -372,6 +374,8 @@ void MyWifi::getWifiParams(String ssid, String pass) {
     Serial.println(F("Starting Accesspoint"));
     wifiManager.setConfigPortalTimeout(timeout);
     wifiManager.setConfigPortalChannel(0);
+    wifiManager.setMinimumSignalQuality(30);
+    //wifiManager.setConnectTimeout(timeout);
     ret = wifiManager.startConfigPortal(ssid.c_str());
     DEBUG_PRINTF("After setConfigPortalTimeout timeout=%i\n", timeout);
     i=0;
