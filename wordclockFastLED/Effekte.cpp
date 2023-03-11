@@ -149,9 +149,9 @@ void Effekte::displayEffekt(int effectNo) {
   {
     if ((_effect && _display_effect) || effectNo >= 0)
     {
-      myspiffs.writeLog(F("effectNo="));
-      myspiffs.writeLog(_effectNo, false);
-      myspiffs.writeLog(F("\n"), false);
+      //myspiffs.writeLog(F("effectNo="));
+      //myspiffs.writeLog(_effectNo, false);
+      //myspiffs.writeLog(F("\n"), false);
       _display_effect = false;
       _showTime=false;
         switch (_effectNo) {

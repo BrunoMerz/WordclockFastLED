@@ -1159,11 +1159,6 @@ void loop()
     uploadFilename = "";
   }
 
-  if(digitalRead(WIFI_RESET)) {
-    myspiffs.writeLog(F("Got Interrupt, resetting WiFi Settings\n"));
-    mywifi.doReset();
-  }
-
   if(reboot) {
     if(reason==1) {
 #if defined(ESP8266)
@@ -1243,6 +1238,7 @@ void loop()
     unsigned int rtc_minutes_of_day = (mytm.tm_hour==24?0:mytm.tm_hour) * 60 + mytm.tm_min;
     unsigned int on = night_on.getMinutesOfDay();
     unsigned int off = night_off.getMinutesOfDay();
+    boolean prevShutdown=shutdown;
     shutdown = false;
     if(on < off) {
       if(rtc_minutes_of_day >= on && rtc_minutes_of_day <= off)
@@ -1262,6 +1258,10 @@ void loop()
       brightness_night = myspiffs.getIntSetting(F("brightness_night"));
     else
       brightness_night = 0;
+
+    // bei Wechsel von shutdown=true auf shutdown=false power einschalten
+    if(prevShutdown && !shutdown)
+      myspiffs.setSetting(F("power"),"on");
 
     power = myspiffs.getBoolSetting(F("power"));
     if(!power || shutdown) {

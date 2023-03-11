@@ -187,7 +187,7 @@ public:
     void    cleanup(void);
     uint32_t getFreeSpace(void);
     int     fileSize(String filename);
-    void    writeLog(uint32_t val, boolean withDateTime=true);
+    void    writeLog(uint32_t val, boolean withDateTime=true, boolean hex=true);
     void    writeLog(char *txt, boolean withDateTime=true);
     void    writeLog(const __FlashStringHelper*, boolean withDateTime=true);
 

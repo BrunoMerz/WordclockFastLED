@@ -641,9 +641,12 @@ int MySpiffs::fileSize(String filename) {
 /**
    Log Funktions
 */
-void MySpiffs::writeLog(uint32_t val, boolean withDateTime) {
+void MySpiffs::writeLog(uint32_t val, boolean withDateTime, boolean hex) {
   char dest[100];
-  sprintf(dest,"#%.6x",val);
+  if(hex)
+    sprintf(dest,"#%.6x",val);
+  else
+    sprintf(dest,"%d",val);
   writeLog(dest, withDateTime);
 }
 
@@ -658,7 +661,7 @@ void MySpiffs::writeLog(char *txt, boolean withDateTime) {
   logHandle = LittleFS.open(LOG_FILE, "a");
 
   if(logHandle) {
-    if(logHandle.size() > 5000) {
+    if(logHandle.size() > 20000) {
       logHandle.close();
       LittleFS.rename(LOG_FILE, LOG_FILE_OLD);
       logHandle = LittleFS.open(LOG_FILE, "w");

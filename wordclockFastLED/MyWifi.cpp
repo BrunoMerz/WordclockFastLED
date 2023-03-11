@@ -354,16 +354,27 @@ void MyWifi::getWifiParams(String ssid, String pass) {
       delay(100);
     }
     while(!_got_ip) {
-      DEBUG_PRINTF("WiFi.begin with, ssid=%s, passwd=%s, timeout=%d i=%d\n",ssid.c_str(), pass.c_str(), timeout, i);
+#ifdef myDEBUG
+      char logtxt[100];
+      sprintf(logtxt,"WiFi.begin with, ssid=%s, timeout=%d i=%d\n",ssid.c_str(), timeout, i);
+      DEBUG_PRINT(logtxt);
+      myspiffs.writeLog(logtxt);
+#endif
       _wifi_stat = -1;
       DEBUG_PRINTLN("vor WiFi.begin");
       WiFi.begin(ssid.c_str(), pass.c_str());
       i=0;
       while(i++ < timeout && !_got_ip) {
         // Warten auf connect oder timeout
+#ifdef myDEBUG
         DEBUG_PRINTF("_wifi_stat=%d, i=%d\n", _wifi_stat, i);
         myspiffs.writeLog(F("Waiting for WiFi Connection\n"));
+#endif
         delay(1000);
+        if(digitalRead(WIFI_RESET)) {
+          myspiffs.writeLog(F("Got Interrupt, resetting WiFi Settings\n"));
+          doReset();
+        }
       }
     }
   }
