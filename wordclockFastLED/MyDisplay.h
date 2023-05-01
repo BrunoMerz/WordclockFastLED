@@ -72,7 +72,9 @@ class MyDisplay {
     COLOR_T getRGBColor(uint16_t hsv);
     COLOR_T getColorHSV(uint8_t deg, uint8_t saturation, uint8_t brightness);
     CHSV    getHsvFromDegRnd(uint16_t rnd, uint16_t deg);
+    CHSV    getHsvFromDegRnd(uint16_t deg);
     uint16_t getDegree(uint16_t x, uint16_t y);
+    uint16_t getDegree(uint16_t sec);
     int16_t getBrightness(void);
     COLOR_T getPixelColor(uint16_t x_pos, uint16_t y_pos);
 

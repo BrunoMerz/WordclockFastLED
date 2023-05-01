@@ -13,10 +13,10 @@
 //#define myDEBUG
 #include "Debug.h"
 #include "Helper.h"
+#include "MyTFT.h"
 
 
 extern MyWifi mwifi;
-
 extern MySpiffs myspiffs;
 extern IconRenderer iconRenderer;
 
@@ -41,6 +41,7 @@ static boolean  _wpsSuccess;
 static boolean  _got_ip;
 static int      _wifi_stat;
 
+static MyTFT *tft = MyTFT::getInstance();
 
 
 #if defined(ESP32)
@@ -207,6 +208,7 @@ void MyWifi::configModeCallback (ESPAsync_WiFiManager *myWiFiManager) {
   DEBUG_PRINTLN("Entered configModeCallback");
   //display.flashPixel(2, 0, red, 3, 500);
   iconRenderer.renderAndDisplay(F("/accesspoint.ico"),0,1);
+  tft->renderAndDisplayIcon(F("/TFTaccesspoint.ico"),0,1);
   DEBUG_PRINTLN(WiFi.softAPIP()); //imprime o IP do AP
   DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
 }
@@ -266,7 +268,7 @@ bool MyWifi::myStartWPS(void) {
    Initialize
 */
 void MyWifi::init(void) {
-#if defined(myDEBUG) && !defined(ESP_TX_RX_AS_GPIO_PINS)
+#if defined(myDEBUG)
   // Enable debug output 
   DEBUG_PRINTLN("setDebugOutput to true");
   wifiManager.setDebugOutput(true);
@@ -305,7 +307,7 @@ void MyWifi::getWifiParams(String ssid, String pass) {
   int ret;
   int timeout;
 
-#if defined(myDEBUG) && !defined(ESP_TX_RX_AS_GPIO_PINS)
+#if defined(myDEBUG)
   // Enable debug output
   DEBUG_PRINTLN("setDebugOutput to true");
   wifiManager.setDebugOutput(true);
@@ -321,11 +323,13 @@ void MyWifi::getWifiParams(String ssid, String pass) {
   _got_ip=false;
 
   if(ssid.length() && pass.length()) {
+    tft->renderAndDisplayIcon(F("/TFTwifi.ico"),0,1);
     iconRenderer.renderAndDisplay(F("/wifi.ico"),500,1);
     timeout = WIFITIMEOUT;
   } else {
     Serial.println(F("Starting WPS"));
     myspiffs.writeLog(F("Starting WPS\n"));
+    tft->renderAndDisplayIcon(F("/TFTwps.ico"),0,1);
     iconRenderer.renderAndDisplay(F("/wps.ico"),500,1);
     timeout = WPSTIMEOUT;
     WiFi.mode(WIFI_STA);
@@ -380,6 +384,7 @@ void MyWifi::getWifiParams(String ssid, String pass) {
   }
   else {
     timeout = WIFITIMEOUT;
+    tft->renderAndDisplayIcon(F("/TFTaccesspoint.ico"),0,1);
     iconRenderer.renderAndDisplay(F("/accesspoint.ico"),500,1);
     DEBUG_PRINTF("setConfigPortalTimeout timeout=%i\n", timeout);
     Serial.println(F("Starting Accesspoint"));
@@ -408,6 +413,7 @@ void MyWifi::getWifiParams(String ssid, String pass) {
     DEBUG_PRINTLN("Got connection");
     WiFi.setAutoReconnect(true);
     WiFi.persistent(true);
+    tft->renderAndDisplayIcon(F("/TFTcheck.ico"),0,0);
     iconRenderer.renderAndDisplay(F("/check.ico"),2000,3);
     myspiffs.setSetting(F("wifi_ssid"), WiFi.SSID());
     myspiffs.setSetting(F("wifi_pass"), WiFi.psk());
@@ -426,7 +432,7 @@ String MyWifi::getState(void) {
   const static char wifi[] PROGMEM = "\n\nWIFI:\nSSID=";
   const static char pwd[] PROGMEM = "\nPWD=";
   Helper::writeState(wifi, myspiffs.getSetting(F("wifi_ssid")));
-  Helper::writeState(pwd, "");
+  Helper::writeState(pwd, (char*)"");
   for(int  i=0;i<myspiffs.getSetting(F("wifi_pass")).length();i++)
     Helper::writeState("*");
   return "";

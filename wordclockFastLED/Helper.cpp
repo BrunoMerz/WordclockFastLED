@@ -40,18 +40,7 @@ void Helper::writeState(const char* text, char *val) {
 */
 void Helper::LedBlink(int count, int ms)
 {
-/*
-#ifdef LED_PIN
-  if(LedStripeDataPin != LED_PIN) {
-    for (int i = 0; i < count; i++) {
-      digitalWrite(LED_PIN, LOW);
-      delay(ms);
-      digitalWrite(LED_PIN, HIGH);
-      delay(ms);
-    }
-  }
-#endif
-*/
+
 }
 
 

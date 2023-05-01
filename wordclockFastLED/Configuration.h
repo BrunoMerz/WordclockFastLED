@@ -14,7 +14,7 @@
 
 #include <Arduino.h>
 
-#define FIRMWARE  "V7.3"
+#define FIRMWARE  "V7.5"
 
 
 /**
@@ -68,23 +68,11 @@ enum MatrixType_t { HORIZONTAL_MATRIX,
 #define LED_COLS  11
 #define LED_ROWS  10
 #define LED_STRIPE_COUNT  LED_ROWS*LED_COLS+5
+#define SEC_STRIPE_COUNT  59
 #define STRIP_X_DIRECTION   -1   // Richtung des Bandes von der Ecke: 1 - links->rechts, -1 rechts->links
 #define STRIP_Y_DIRECTION   1    // Richtung des Bandes von der Ecke: 1 - unten->oben,   -1 oben->unten
 #define MATRIX_TYPE         VERTICAL_MATRIX
 
-#if defined(ESP32)
-#define LICENSE_PIN 0
-#else
-#define LICENSE_PIN D0
-#define RESET_PIN A0
-#endif
-
-#ifdef WITH_AUDIO
-#define PinD3           // Data PIN of LED stripe D3  Wortuhr/do?datapin=0
-#else
-//#define PinD3           // Data PIN of LED stripe D3  Wortuhr/do?datapin=0
-#define PinD4           // Data PIN of LED stripe D4  Wortuhr/do?datapin=2
-#endif
 
 #ifdef WITH_LICENSE
 #define LIC_TAG "LIC, "
@@ -121,67 +109,97 @@ enum MatrixType_t { HORIZONTAL_MATRIX,
 
 
 #define SERIAL_SPEED        115200
-//#define LED_STRIPE_COUNT    114         // 174 LEDs = 114 Uhrzeit, 1 Sekunden Blinker 59 - Sekundenanzeige
 
 
 #if defined(ARDUINO_ESP8266_NODEMCU)
 #define COMPILED_FOR                    "ESP-12E NodeMCU, D5"
 #define LED_STRIPE_DATA_PIN 14          // Data PIN of LED stripe D5 - ESP8266
-#define LED_PIN 2                       // buildin LED ESP8266
-#define ESP_PIN_1 1                     // Tx
-#define ESP_PIN_3 3                     // Rx
 #endif                                  // ARDUINO_ESP8266_NODEMCU
 
 
-#if defined(ESP32)
+#if defined(WEMOS_D1_MINI32)
 #define COMPILED_FOR                    "ESP-32, GPIO05"
-#define LED_STRIPE_DATA_PIN 5           // Data PIN of LED stripe GPIO05
-#define LED_PIN 2                       // buildin LED ESP32
-#define ESP_PIN_1 1                     // Tx
-#define ESP_PIN_3 3                     // Rx
-#define WIFI_RESET 15
+#define LED_STRIPE_DATA_PIN 14          // Data PIN of LED stripe D5 - ESP8266
+#define SEC_STRIPE_DATA_PIN 5           // Data PIN of LED stripe GPIO05
+#define WIFI_RESET 15                   // Reset WiFi settings
+#define LICENSE_PIN 0                   // Generate License Key
+#define INPUT_PULLDOWN_16  INPUT_PULLDOWN
 #endif                                  // ESP32
+
 
 #if defined(ARDUINO_ESP8266_GENERIC)
 #define COMPILED_FOR                    "ESP8266 GENERIC, GPIO2"
 #define  LED_STRIPE_DATA_PIN 2          // Data PIN of LED stripe GPIO2
-//#define LED_PIN 0                     // bei ESP-01S there is no usable buildin LED. We could connect one at GPIO0
-#define ESP_PIN_1 1                     // Tx
-#define ESP_PIN_3 3                     // Rx
-//#define ESP_TX_RX_AS_GPIO_PINS          // ------------------ TX/RX as GIOP pins -------------------
-
 #endif                                  // ARDUINO_ESP8266_GENERIC
 
 
-
-
 #if defined(ARDUINO_ESP8266_WEMOS_D1MINIPRO) 
-#if defined(PinD3)
-#define LED_STRIPE_DATA_PIN D3
-#define COMPILED_FOR                    "WEMOS D1 Mini Pro, D3, " LIC_TAG
-#else
 #define COMPILED_FOR                    "WEMOS D1 Mini Pro, D4, " LIC_TAG
-#define LED_STRIPE_DATA_PIN D4
-#endif
-#define LED_PIN D4                      // LED_BUILTIN D4
-#define ESP_PIN_1 TX                    // Tx
-#define ESP_PIN_3 RX                    // Rx
+#define LED_STRIPE_DATA_PIN D4 
+#define SEC_STRIPE_DATA_PIN D3          // Data PIN of SEC stripe D3 - ESP8266
+#define WIFI_RESET D8                   // Reset WiFi settings
+#define LICENSE_PIN D0                  // Generate License Key
 #endif                                  // ARDUINO_ESP8266_WEMOS_D1MINIPRO
 
+
 #if defined(ARDUINO_ESP8266_WEMOS_D1MINI)
-#if defined(PinD3)
-#define LED_STRIPE_DATA_PIN D3
-#define COMPILED_FOR                    "WEMOS D1 R2 & mini, D3, " LIC_TAG
-#else
 #define COMPILED_FOR                    "WEMOS D1 R2 & mini, D4, " LIC_TAG
 #define LED_STRIPE_DATA_PIN D4 
+#define SEC_STRIPE_DATA_PIN D3          // Data PIN of SEC stripe D3 - ESP8266
+#define WIFI_RESET D8                   // Reset WiFi settings
+#define LICENSE_PIN D0                  // Generate License Key
+#endif                                  // ARDUINO_ESP8266_WEMOS_D1MINI
+
+
+#if defined(LILYGO_T_HMI)
+#define COMPILED_FOR                    "LILYGO T-HMI"
+#define LED_STRIPE_DATA_PIN 15          // Data PIN of LED stripe IO15
+#define SEC_STRIPE_DATA_PIN 16          // Data PIN of SEC stripe Io16
+#define WIFI_RESET 17
+#define LICENSE_PIN 18
+#define INPUT_PULLDOWN_16  INPUT_PULLDOWN
+#define PWR_EN_PIN  (10)
+#define PWR_ON_PIN  (14)
+#define BAT_ADC_PIN (5)
+#define BUTTON1_PIN (0)
+#define BUTTON2_PIN (21)
+
+// lcd
+#define LCD_DATA0_PIN (48)
+#define LCD_DATA1_PIN (47)
+#define LCD_DATA2_PIN (39)
+#define LCD_DATA3_PIN (40)
+#define LCD_DATA4_PIN (41)
+#define LCD_DATA5_PIN (42)
+#define LCD_DATA6_PIN (45)
+#define LCD_DATA7_PIN (46)
+#define PCLK_PIN      (8)
+#define CS_PIN        (6)
+#define DC_PIN        (7)
+#define RST_PIN       (-1)
+#define BK_LIGHT_PIN  (38)
+
+// touch screen
+#define TOUCHSCREEN_SCLK_PIN (1)
+#define TOUCHSCREEN_MISO_PIN (4)
+#define TOUCHSCREEN_MOSI_PIN (3)
+#define TOUCHSCREEN_CS_PIN   (2)
+#define TOUCHSCREEN_IRQ_PIN  (9)
+
+// sd card
+#define SD_MISO_PIN (13)
+#define SD_MOSI_PIN (11)
+#define SD_SCLK_PIN (12)
+
+#define SDIO_DATA0_PIN (13)
+#define SDIO_CMD_PIN   (11)
+#define SDIO_SCLK_PIN  (12)
+
+
+#define STD_FONT 4
+
 #endif
 
-#define LED_PIN D4                      // LED_BUILTIN D4
-#define ESP_PIN_1 TX                    // Tx
-#define ESP_PIN_3 RX                    // Rx
-#define WIFI_RESET D8
-#endif                                  // ARDUINO_ESP8266_WEMOS_D1MINI
 
 typedef struct mytm
 {
@@ -200,3 +218,61 @@ typedef struct mytm
   String   tm_timezone;
   String   tm_ntpserver;
 } MYTM;
+
+#define BYTE  uint8_t
+#define WORD  uint16_t
+#define DWORD uint32_t
+#define LONG  uint32_t
+
+struct ICOHEADER {
+   WORD wReserved;  // Always 0
+   WORD wResID;     // Always 1
+   WORD wNumImages; // Number of icon images/directory entries
+};
+
+
+struct ICONDIRENTRY {
+    BYTE  bWidth;    // Breite des Bildes
+    BYTE  bHeight;    // Die doppelte Höhe des Bildes in Pixeln.
+    BYTE  bCount;    // Anzahl der Farben im Bild (2 oder 16, bzw. 0 falls mehr als 
+    BYTE  bReserved;    // 256 Farben). immer 0
+    WORD  wPlanes;    // Anzahl der Farbebenen in der Regel 1 u. 0
+    WORD  wBitCount;      // Anzahl der Bits pro Pixel( Anzahl der Farben) 1= Schwarz-
+        // Weiß = 8 Byte, 4 = 16 Farben = 64 Byte, 
+        // 8 = 256 Farben = 1024 Byte, 24 = 16 Milion
+        // Farben (keine Farbtabelle) 
+    DWORD dwBytesInRes;   // Bildgröße in Bytes ab diesem Record. Das bedeutet 
+                          // BITMAPINFOHEADER, Farbtabelle, XOR- und 
+                          // AND-Bild zusammen gerechnet.
+    DWORD dwImageOffset;  // Offset ab wo der BITMAPINFOHEADER beginnt.
+};
+
+
+struct BITMAPINFOHEADER {
+    DWORD   biSize;      // Länge des Info-Headers(dieser Record) = 40 Byte in Hex 28
+    LONG    biWidth;      // Breite des Bildes 
+    LONG    biHeight;     // Höhe des Bildes 
+    WORD    biPlanes;     // Anzahl der Farbebenen in der Regel 1 u. 0
+    WORD    biBitCount;   // Anzahl der Bits pro Pixel( Anzahl der Farben) 1= Schwartz-
+        // Weiß = 8 Byte, 4 = 16 Farben = 64 Byte, 
+        // 8 = 256 Farben = 1024 Byte, 24 = 16 Milion 
+        // Farben (keine Farbtabelle)  
+    DWORD   biCompression;  // Komprimierungstyp, 0 = Unkomprimiert, 1 = 8-Bit 
+          // RLE =Run-Length-Encording-Verfahren, 2 = 4-Bit Run-Encording-
+          // Verfahren
+    DWORD   biSizeImage;    // Bildgröße ohne Farbtabelle. Aber XOR und AND Bild zusammen 
+             // gerechnet bei Icon u. Cursor.
+    DWORD   biXPelsPerMeter;   // Horizontale Auflösung
+    DWORD   biYPelsPerMeter;   // Vertikale Auflösung
+    DWORD   biClrUsed;         // Die Zahl der im Bild vorkommenden Farben zB. Bei 256 Farben
+             //  müssen es nicht unbedingt 256 sein, es könne auch 
+             // zB. 206 sein.
+    DWORD   biClrImportant;    // die Anzahl der wichtigen Farben
+} ;
+
+struct ICON {
+  BYTE  b;  // blue
+  BYTE  g;  // green
+  BYTE  r;  // red
+  BYTE  a;  // alpha
+};

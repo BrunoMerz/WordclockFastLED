@@ -166,6 +166,9 @@ void MyDisplay::print(String letter) {
 }
 
 
+
+
+
 void MyDisplay::drawPixel(uint16_t x_pos, uint16_t y_pos, COLOR_T color) {
   DEBUG_PRINTF("drawPixel COLOR_T: x=%d, y=%d, c=%#.6x, _width=%d, _height=%d\n", x_pos, y_pos, color, _width, _height);
   DEBUG_FLUSH();
@@ -292,6 +295,21 @@ CHSV MyDisplay::getHsvFromDegRnd(uint16_t rnd, uint16_t dg) {
 }
 
 
+// Convert angle + randomvalue to a hsv value
+CHSV MyDisplay::getHsvFromDegRnd(uint16_t dg) {
+  return getHsvFromDegRnd(_angleOffset, dg);
+}
+
+
+uint16_t MyDisplay::getDegree(uint16_t sec) {
+  // sec == 0  ==> Sekunden blinken unter der Glocke
+  // sec == 1-60  ==> Sekundenzeiger rund um die Uhr
+  uint16_t x = pgm_read_byte(&(coorMap[sec][0]));
+  uint16_t y = pgm_read_byte(&(coorMap[sec][1]));
+  return getDegree(y, x);
+}
+
+
 uint16_t MyDisplay::getDegree(uint16_t y, uint16_t x) {
   float degree;
   const double dx = 29.9;
@@ -299,19 +317,6 @@ uint16_t MyDisplay::getDegree(uint16_t y, uint16_t x) {
 
   
   // Ankathete und Gegenkathete berechnen
-  if(y>9) {
-    // ledStripeCount = 114, standard ohne Sekundenzeiger ohne Sekunden Blinker
-    // ledStripeCount = 115 oder 174 mit Sekunden Blinker
-    // ledStripeCount = 173 ohne Sekunden Blinker mit Sekundenzeiger
-    // y>10 =>  11 = Sekunden LED oder Sekunden Blinker
-    // mit Sekunden Blinker x=1 bei Sekunde 1 usw. => num = 1
-    // ohne Sekunden Blinker x=0 bei Sekunde 1 usw. => num = 114-113 = 1
-    byte num = y*11+x-113;    // y=10, X=4 => num=
-    if(_ledStripeCount==115 || _ledStripeCount==174)
-      num--;
-    x=pgm_read_byte(&(coorMap[num][0]));
-    y=pgm_read_byte(&(coorMap[num][1]));
-  }
   double ak = 149.5 - (x * dx);
   double gk = 149.5 - (y * dy);
 

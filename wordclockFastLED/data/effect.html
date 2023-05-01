@@ -108,13 +108,18 @@
 				</label>
 			</div>
 			<br>
-			<div id="second_type" style="display:none" align="left">
-				<label style="width: 250px">%Sekundenzeiger%</label>
-				<select class="dropbtn" name="seconds_stripe" value="1" onchange="return saveSettings(this);">
-					<option value="1">%Nur Sekundenblinken%</option>
-					<option value="2">%Einzel LED%</option>
-					<option value="3">%Alle LED's%</option>
+			<div id="second_hand_setting" style="display:none" align="left">
+				<label style="width: 250px">%Sekundenzeiger Art%</label>
+				<select class="dropbtn" name="second_hand" value="1" onchange="return saveSettings(this);">
+					<option value="0">%Aus%</option>
+					<option value="1">%Sekunde für Sekunde%</option>
+					<option value="2">%Alle Sekunden%</option>
 				</select>
+			</div>
+			<div id="quarter_width_setting" style="display:none" align="left">
+				<label style="width: 250px">%Länge Sekundenzeiger%</label>
+				<input class="box" style="width: 42px" type="number" name="quarter_width" id="quarter_width" min="1" max="59"
+							value="5" onchange="return saveSettings(this);">
 			</div>
 		</div>
     </form>
@@ -144,17 +149,23 @@
 						document.getElementById("second_flash_on_off").style.display  = "block";
 						if(obj.seconds_stripe > 1) {
 							console.log("seconds_stripe > 1: "+obj.seconds_stripe);
-							document.getElementById("second_type").style.display  = "block";
-							document.settings.seconds_stripe.options[obj.seconds_stripe-1].selected = true;
+							console.log("second_hand: "+obj.second_hand);
+							document.getElementById("second_hand_setting").style.display  = "block";
+							document.getElementById("quarter_width_setting").style.display  = "block";
+							document.settings.second_hand.options[obj.second_hand].selected = true;
 						}
 					}
 					if (obj.hasOwnProperty("sec_flash_enabled")) {
-						console.log("sec_flash_enabled"+obj.sec_flash_enabled);
+						console.log("sec_flash_enabled="+obj.sec_flash_enabled);
 						if (obj.sec_flash_enabled == "true") {
 							document.settings.sec_flash_enabled.checked = "on";
 						} else {
 							document.settings.sec_flash_enabled.checked = "";
 						}
+					}
+					if (obj.hasOwnProperty("quarter_width")) {
+						console.log("quarter_width="+obj.quarter_width);
+						document.settings.quarter_width.value=obj.quarter_width
 					}
                 };
             };

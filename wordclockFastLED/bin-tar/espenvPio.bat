@@ -3,9 +3,9 @@
 set ESPT=python C:\Users\mz\Documents\ESP-Tools\esptool-master\esptool.py
 rem set ESPT=C:\Users\mz\Documents\ESP-Tools\esptool\esptool.exe
 
-set BASEDIR=C:\Users\mz\Documents\GitHub\wordclockFastLED\wordclockFastLED
+set BASEDIR=C:\Users\mz\Documents\GitHub\wordclockFastLED\.pio\build\lilygo-t-hmi
 
-set PORT=COM4
+set PORT=COM5
 
 rem set MKSP=C:\Users\mz\Documents\ESP-Tools\mkspiffs\mkspiffs.exe
 set MKSP=C:\Users\mz\AppData\Local\Arduino15\packages\esp8266\tools\mklittlefs\2.5.0-4-fe5bb56\mklittlefs.exe
@@ -15,10 +15,10 @@ set PIN=D4
 set FS=littlefs
 
 
-rem D1 mini
-set FLASH_SIZE=4MB
-set SPIFFS_START=0x00200000 
-set SPIFFS_SIZE=2072576
+rem LILYGO T-HMI
+set FLASH_SIZE=16MB
+set SPIFFS_START=0xc90000 
+set SPIFFS_SIZE=0x360000
 set TYPE=d1r2
 
 rem D1 mini pro

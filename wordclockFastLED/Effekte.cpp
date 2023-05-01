@@ -114,6 +114,7 @@ Effekte::Effekte(void) {
    Displays one of nice available patterns
 */
 void Effekte::displayEffekt(int effectNo) {
+  int _quarter=0;
   int _effectNo;
   _effectCount=0;
   _effect = myspiffs.getBoolSetting(F("effects"));

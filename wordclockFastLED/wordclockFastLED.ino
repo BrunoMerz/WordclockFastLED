@@ -106,6 +106,7 @@ extern "C" {
 #include "Renderer.h"
 
 #include "MyDisplay.h"
+#include "SecondHand.h"
 #include "Ticker.h"
 #include "Effekte.h"
 #include "IconRenderer.h"
@@ -114,6 +115,7 @@ extern "C" {
 #include "Helper.h"
 #include "MyTime.h"
 #include "MyAlexa.h"
+
 
 #ifdef DCF77_SENSOR_EXISTS
   #include "MyDCF77.h"
@@ -140,6 +142,11 @@ AsyncDNSServer dns1;
 #ifdef WITH_ALEXA
 MyAlexa alexa;
 #endif
+
+
+#include "MyTFT.h"
+MyTFT *tft;
+
 
 /*
  *  Handling adjust brightness regarding time
@@ -221,6 +228,7 @@ int   brightness_night=0;
 bool  shutdown;
 bool  sec_flash_enabled=false;
 int   seconds_stripe=0;
+int   second_hand=1;
 
 byte    progress_x;
 int16_t x_pos_progress;
@@ -236,6 +244,7 @@ uint8_t LedStripeDataPin = LED_STRIPE_DATA_PIN;
    LED Driver for WS2812B stripes
 */
 MyDisplay display;
+SecondHand secondHand;
 
 
 
@@ -412,7 +421,7 @@ void handle_state(AsyncWebServerRequest *request) {
   const static char ma[] PROGMEM = "\nMaxAllocHeap: ";
   const static char rs[] PROGMEM = "\nReset Pin: ";
 
-  myspiffs.openFile("/state.txt", "w");
+  myspiffs.openFile("/state.txt", (char *)"w");
 
   Helper::writeState(hn, ssid);
   Helper::writeState(ipt, ip);
@@ -421,7 +430,7 @@ void handle_state(AsyncWebServerRequest *request) {
   Helper::writeState(brightness, display.getBrightness());
   Helper::writeState(sunrise, adjb.getSunrise());
   Helper::writeState(sunset, adjb.getSunset());
-  Helper::writeState(firmware, FIRMWARE);
+  Helper::writeState(firmware, (char *)FIRMWARE);
   Helper::writeState(boottime, timeStamp);
   Helper::writeState(currenttime, mytime.getTime());
   Helper::writeState(compiledfor, compile_date);
@@ -471,7 +480,7 @@ void handle_FileUpload(AsyncWebServerRequest *request, String filename, size_t i
     //DEBUG_PRINT(F("handle_FileUpload Name: "));
     //DEBUG_PRINTLN(filename);
     if(filename.length() > 1) {
-      myspiffs.openFile(filename, "w");
+      myspiffs.openFile(filename, (char *)"w");
       if(filename.equals("/resource.json"))
         myspiffs.reloadResource();
     }
@@ -514,7 +523,7 @@ bool updateFW() {
   y_pos_progress=(LED_ROWS-10)/2; //(16-10)/2=3
   DEBUG_PRINTF("updateFW: fn=%s, x_pos=%d, y_pos=%d\n",uploadFilename.c_str(), x_pos_progress, y_pos_progress);
   iconRenderer.renderAndDisplay(F("/progress0.ico"),0,1,x_pos_progress,y_pos_progress);
-  if (myspiffs.openFile(uploadFilename, "r")) {
+  if (myspiffs.openFile(uploadFilename, (char *)"r")) {
     DEBUG_PRINTLN("updateFW Open ok:" + uploadFilename);
     toDelete = uploadFilename;
     if (!Update.begin(uploadLength)) {
@@ -601,7 +610,7 @@ bool expandTar() {
   char buf[SZ];
   int l;
 
-  myspiffs.openFile(String(F("/result.html")), "w");
+  myspiffs.openFile(String(F("/result.html")), (char *)"w");
 
   TarUnpacker *TARUnpacker = new TarUnpacker();
   TARUnpacker->setupFSCallbacks( targzTotalBytesFn, targzFreeBytesFn );
@@ -772,52 +781,18 @@ void setup()
 {
   char inser;
 
-#ifdef ESP_TX_RX_AS_GPIO_PINS
-//********** CHANGE PIN FUNCTION  TO GPIO **********
-pinMode(ESP_PIN_1, FUNCTION_3); 
-pinMode(ESP_PIN_3, FUNCTION_3); 
-//**************************************************
-#else
-//********** CHANGE PIN FUNCTION  TO TX/RX **********
-//pinMode(ESP_PIN_1, FUNCTION_0); 
-//pinMode(ESP_PIN_3, FUNCTION_0); 
-//***************************************************
-#endif
-
-#ifdef LED_PIN
-  pinMode(LED_PIN, OUTPUT);
-#endif
-
-#ifndef ESP_TX_RX_AS_GPIO_PINS
   Serial.begin(SERIAL_SPEED);
   delay(100);
   Serial.println(F("\n\nWortuhr is initializing..."));
-#endif
+
 
 #ifdef WITH_LICENSE
-  #if defined(ESP8266)
     pinMode(LICENSE_PIN, INPUT_PULLDOWN_16);
-  #else
-    pinMode(LICENSE_PIN, INPUT_PULLDOWN);
-  #endif
 #endif
 
   DEBUG_PRINTLN(F("... and starting in debug-mode..."));
-
-#ifndef ESP_TX_RX_AS_GPIO_PINS
   Serial.flush();
-#endif
 
-  //attachInterrupt(digitalPinToInterrupt(WIFI_RESET), resetWiFi, FALLING);
-  pinMode(WIFI_RESET, INPUT_PULLDOWN_16);
-
-  mywifi.init();
-  
-#ifdef DCF77_SENSOR_EXISTS
-  pinMode(PIN_DCF77_PON, OUTPUT);
-  // DCF77-Empfaenger ausschalten...
-  dcf77.enable(false);
-#endif
 
 #if defined(ESP8266)
   if(!LittleFS.begin()) {
@@ -840,19 +815,39 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   // read all settings
   myspiffs.readSettings();
 
+  //attachInterrupt(digitalPinToInterrupt(WIFI_RESET), resetWiFi, FALLING);
+  pinMode(WIFI_RESET, INPUT_PULLDOWN_16);
+
+  tft = MyTFT::getInstance();
+  tft->init();
+  
+  // Init WiFi
+  mywifi.init();
+  
+#ifdef DCF77_SENSOR_EXISTS
+  pinMode(PIN_DCF77_PON, OUTPUT);
+  // DCF77-Empfaenger ausschalten...
+  dcf77.enable(false);
+#endif
+
+
   ap_mode = myspiffs.getBoolSetting(F("ap_mode"));
 
-  /*  seconds_stripe: Art der Sekundenanzeige 0-Keine Leds für Sekundenanzeige vorhanden
-   *                                          1-Eine Led vorhanden
-   *                                          2-59 Leds vorhanden, Anzeige immer nur eine Sekunde
-   *                                          3-59 Leds vorhanden, Anzeige alle Leds nacheinander einschalten
+  /*  seconds_stripe: Art der Hardware: 0 - Keine Leds für Sekundenanzeige vorhanden
+   *                                    1 - Eine Led vorhanden (Unter dem Glockensymbol)
+   *                                    2 - Sekundenzeiger in Form von 59 LEDs um die Uhr herum
    *                                          
-   *  sec_flash_enabled: Sekundenanzeige ein/aus
+   *  sec_flash_enabled:                Sekundenblinken ein/aus
+   *  
+   *  second_hand:                      0 - Sekundenzeiger nicht ansteuern
+   *                                    1 - Sekunde für Sekunde anzeigen
+   *                                    2 - Alle Sekunden anmachen
    */
-  seconds_stripe = myspiffs.getIntSetting(F("seconds_stripe"));
+  seconds_stripe    = myspiffs.getIntSetting(F("seconds_stripe"));
   sec_flash_enabled = myspiffs.getBoolSetting(F("sec_flash_enabled"));
+  second_hand       = myspiffs.getIntSetting(F("second_hand"));
+  secondHand.setQuarterWidth(myspiffs.getIntSetting(F("quarter_width")));
   
-
 #ifndef WITH_AUDIO
 /*
   int tmp = myspiffs.getIntSetting(F("data_pin"));
@@ -863,6 +858,7 @@ pinMode(ESP_PIN_3, FUNCTION_3);
 
   // initialize LED driver
   display.init(LedStripeDataPin, LED_STRIPE_COUNT);
+  secondHand.init();
 
   // clear renderer matrix
   renderer.clearScreenBuffer(matrix);
@@ -871,7 +867,9 @@ pinMode(ESP_PIN_3, FUNCTION_3);
   Helper::LedBlink(3, 500);
 #endif
 
+  tft->renderAndDisplayIcon(F("/TFTsetup.ico"),0,1);
   iconRenderer.renderAndDisplay(F("/setup.ico"),1500,1);
+  secondHand.drawQuarter(1);
   
   myspiffs.setSetting(F("power"),F("on"));
 
@@ -980,7 +978,9 @@ pinMode(ESP_PIN_3, FUNCTION_3);
       night_off.setMinutes(s.substring(3).toInt());
 
       sec_flash_enabled = myspiffs.getBoolSetting(F("sec_flash_enabled"));
-      seconds_stripe = myspiffs.getIntSetting(F("seconds_stripe"));
+      seconds_stripe    = myspiffs.getIntSetting(F("seconds_stripe"));
+      second_hand       = myspiffs.getIntSetting(F("second_hand"));
+      secondHand.setQuarterWidth(myspiffs.getIntSetting(F("quarter_width")));
 
 #ifdef WITH_ALEXA
       if(myspiffs.getBoolSetting(F("power")))
@@ -1085,13 +1085,15 @@ pinMode(ESP_PIN_3, FUNCTION_3);
 
   Serial.println(startTicker);
   Serial.println(F("setup done"));
+  tft->drawString(startTicker,0,0,2);
   COLOR_T c = display.getColor();
   display.setColor(0xff6000);
   ticker.render(1, 180, startTicker);
   c = myspiffs.getRGBSetting(F("rgb"));
   display.setColor(c==-1?0xffffff:c);
   display.setBrightness();
-
+  tft->drawClock();
+  
 }
 
 /**
@@ -1175,6 +1177,7 @@ void loop()
     DEBUG_PRINTLN("call displayEffekt");
     effekte.displayEffekt(displayEffekt-1);
     displayEffekt=0;
+    secondHand.drawQuarter(4);
   }
 
   if(displayTicker) {
@@ -1303,6 +1306,7 @@ void loop()
       */
       DEBUG_PRINTLN("vor renderer.showTime");
       renderer.showTime(matrix);
+      secondHand.drawQuarter();
       DEBUG_PRINTLN("nach renderer.showTime");
     }
 
@@ -1317,38 +1321,35 @@ void loop()
     #endif
   }
 
-  if(seconds_stripe>1) {
-    DEBUG_PRINTLN("seconds_stripe>1");
-    if(mytm.tm_sec != lastSecond && !shutdown) {
+  if(mytm.tm_sec != lastSecond && !shutdown && power) {
+    COLOR_T c = display.getColor();
+    tft->drawTime();
+    
+    // Sekundenzeiger rund um die Uhr
+    if(seconds_stripe & 2 && second_hand) {
+      DEBUG_PRINTLN("seconds_stripe==2");
       if(mytm.tm_sec) {
-        COLOR_T c = display.getColor();
-        display.drawPixel(mytm.tm_sec+3, 10, c);
-        if(seconds_stripe == 2 && mytm.tm_sec > 1)
-          display.clearPixel(mytm.tm_sec+2, 10);
+        secondHand.drawSecond(mytm.tm_sec, c);
+        if(mytm.tm_sec > 1 && second_hand == 1)
+          secondHand.drawSecond(mytm.tm_sec-1, 1);
       } else {
-        for(int i=1;i<=59;i++)
-          display.clearPixel(i+3, 10);
+          secondHand.clearAllSeconds();
       }
-      if(!sec_flash_enabled && !shutdown) {
-        lastSecond = mytm.tm_sec;
-        display.show();
-      }
+      secondHand.show();
     }
-  }
 
-  // seconds_stripe==1 => einzelne LED für das Sekunden blinken
-  if(seconds_stripe==1 && sec_flash_enabled) {
-    DEBUG_PRINTLN("seconds_stripe==1 && sec_flash_enabled");
-    if(mytm.tm_sec != lastSecond && !shutdown && power) {
+    // seconds_stripe==1 => einzelne LED für das Sekunden blinken
+    if(seconds_stripe & 1 && sec_flash_enabled) {
+      DEBUG_PRINTLN("seconds_stripe==1");
       if(mytm.tm_sec % 2) {
-        COLOR_T c = display.getColor();
-        display.drawPixel(4, 10, c);
+        secondHand.drawSecond(0, c);
       } else {
-        display.clearPixel(4, 10);
+        secondHand.clearSecond(0);
       }
-      lastSecond = mytm.tm_sec;
-      display.show();
+      secondHand.show();
     }
+
+    lastSecond = mytm.tm_sec;
   }
 
   #if defined(WITH_MQTT)

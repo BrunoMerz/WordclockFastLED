@@ -1,135 +1,81 @@
 /**
-   IconRenderer.cpp
+   TFTIconRenderer.cpp
    Class outputs icons stored in LittleFS
 
    @autor    B. Merz
    @version  1.1
    @created  09.01.2020
-   @updated  19.03.2020
 
 */
-#include "IconRenderer.h"
-#include "MySpiffs.h"
+
+#include <Arduino.h>
 
 //#define myDEBUG
+
+#include "Configuration.h"
+#include "TFTIconRenderer.h"
+#include "MySpiffs.h"
+#include "MyTFT.h"
 #include "Debug.h"
 
-extern MyDisplay display;
+
 extern MySpiffs myspiffs;
 
 
-IconRenderer::IconRenderer() {
+TFTIconRenderer* TFTIconRenderer::instance = 0;
 
+
+#ifdef LILYGO_T_HMI
+
+
+
+TFTIconRenderer::TFTIconRenderer() {
+  myfs = &myspiffs;
+  tft = MyTFT::getInstance();
 }
 
-#if (USE_JPGDECODING == 1)
-void IconRenderer::renderAndDisplayJPEG(String iconFileName, int delayAfter, byte cleanUp, int16_t x_pos, int16_t y_pos) {
-  int ret=-1;
-  File fh = LittleFS.open(iconFileName, "r");
-  //Serial.printf("renderAndDisplayJPEG: vor decodeFsFile, fh=%d\n", fh);
-  if(fh) {
-    ret = JpegDec.decodeFsFile(fh);
-    Serial.printf("renderAndDisplayJPEG: ret=%d\n",ret);
-    fh.close();
+
+TFTIconRenderer *TFTIconRenderer::getInstance() {
+  if (!instance)
+  {
+      instance = new TFTIconRenderer();
   }
-  Serial.printf("renderAndDisplayJPEG: nach decodeFsFile, ret=%d\n",ret);
-  if(ret>0) {
-    uint8_t row = 0; uint8_t col = 0;
-
-    int width         = JpegDec.width;
-    int height        = JpegDec.height;
-    uint32_t mcuPixels= JpegDec.MCUWidth * JpegDec.height;
-
-    uint16_t _width   = display.getWidth();
-    uint16_t _height  = display.getHeight();
-
-    // check if x_pos/y_pos are given, if no place ico midth of display
-    if(x_pos >= 0) 
-      _x_pos = x_pos;
-    else
-      if(_width>width)
-        _x_pos=(_width-width)/2;
-      else
-        _x_pos = 0;
-
-    if(y_pos >= 0) 
-      _y_pos = y_pos;
-    else
-      if(_height>height)
-        _y_pos=(_height-height)/2;
-      else
-        _y_pos = 0;
-
- Serial.printf("renderAndDisplayJPEG: width=%d, height=%d, mcuPixels=%d, _x_pos=%d, _y_pos=%d, cleanUp=%d, delayAfter=%d\n",width, height, mcuPixels,    _x_pos, _y_pos, cleanUp, delayAfter);
-    // clear led matrix
-    if(cleanUp & 1)
-      display.clear();
-
-    while(JpegDec.read()){
-      uint16_t *pImg = JpegDec.pImage;
-      for(uint8_t i=0; i < mcuPixels; i++){
-        // Extract the red, green, blue values from each pixel
-        uint8_t b = uint8_t((*pImg & 0x001F)<<3); // 5 LSB for blue
-        uint8_t g = uint8_t((*pImg & 0x07C0)>>3); // 6 'middle' bits for green
-        uint8_t r = uint8_t((*pImg++ & 0xF800)>>8); // 5 MSB for red
-        // Calculate the matrix index (column and row)
-        col = JpegDec.MCUx*8 + i%8;
-        row = JpegDec.MCUy*8 + i/8;
-        COLOR_T c = display.getColor(r,g,b);
-        Serial.printf("x=%d, y=%d, c=%#.6x\n",col,row,c);
-        // Set the matrix pixel to the RGB value
-        display.drawPixel(_x_pos+col,_y_pos+(_height-row),c);
-      }
-    }
-    display.show(delayAfter);
-
-    // clear led matrix
-    if(cleanUp & 2)
-      display.clear();
-  }
+  return instance;
 }
-#endif
 
-void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cleanUp, int16_t x_pos, int16_t y_pos) {
+
+
+void TFTIconRenderer::renderAndDisplay(const __FlashStringHelper* iconFileName, int delayAfter, byte cleanUp, int16_t x_pos, int16_t y_pos) {
+  char tmp[40];
+  strncpy_P(tmp, (const char*)iconFileName, sizeof(tmp));
+  renderAndDisplay(tmp, delayAfter, cleanUp, x_pos, y_pos);
+}
+
+void TFTIconRenderer::renderAndDisplay(char* iconFileName, int delayAfter, byte cleanUp, int16_t x_pos, int16_t y_pos) {
   char *fb;
-  String tmp=iconFileName;
-  char TFTfn[40] = {"/TFT"};
-  if(!tmp.startsWith("/")) {
-    strcpy(TFTfn+4,tmp.c_str());
-    tmp = "/"+tmp;
-  } else {
-    strcpy(TFTfn+4, tmp.substring(1).c_str());
-  }
-  DEBUG_PRINTF("Icon to render='%s', delayAfter=%d, cleanUp=%d\n",tmp.c_str(), delayAfter, cleanUp);
-  delay(5);
-  DEBUG_PRINTLN(tmp);
+  String tmp(iconFileName);
+  DEBUG_PRINTF("Icon to render='%s', delayAfter=%d, cleanUp=%d\n",iconFileName, delayAfter, cleanUp);
+  DEBUG_PRINTLN(iconFileName);
 
-#if (USE_JPGDECODING == 1)
-  if(iconFileName.endsWith(F(".jpg")) || iconFileName.endsWith(F(".jpeg"))) {
-    renderAndDisplayJPEG(iconFileName, delayAfter, cleanUp, x_pos, y_pos);
-    return;
-  }
-#endif
-
-  int fs = myspiffs.fileSize(tmp);
+  int fs = myfs->fileSize(tmp);
   DEBUG_PRINTF("Icon size=%d\n",fs);
   if(fs <= 0)
     return;
   fb = (char *)malloc(fs+10);
   if(!fb) {
     DEBUG_PRINTF("Malloc %d bytes failed\n",fs);
-    myspiffs.writeLog(F("IconRenderer: malloc failed\n"));
+    myfs->writeLog(F("TFTIconRenderer: malloc failed\n"));
     return;
   }
-  int lng = myspiffs.readFile(tmp, fb);
+  int lng = myfs->readFile(iconFileName, fb);
   if(!lng){
-    DEBUG_PRINTLN("renderAndDisplay: file not found -> "+iconFileName);
-    myspiffs.writeLog(F("IconRenderer: file not found\n"));
+    DEBUG_PRINTLN("renderAndDisplay: file not found -> "+tmp);
+    myfs->writeLog(F("TFTIconRenderer: file not found\n"));
     return;
   }
 
-  uint16_t _width = display.getWidth();
-  uint16_t _height = display.getHeight();
+  uint16_t _width = tft->width();
+  uint16_t _height = tft->height();
 
   // set _icoHeader to beginning of icon file
   _icoHeader = (ICOHEADER*)fb;
@@ -150,7 +96,7 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
   int width         = _bitmapInfoHeader.biWidth;
   int height        = _bitmapInfoHeader.biHeight/2;
   int wPlanes       = _bitmapInfoHeader.biPlanes;
-  int Count    = 1 << (wBitCount * wPlanes);                 // Count = 2 ^ number of  bits, Bits=1->2 s, 4->16 s, 24->‭16.777.216‬ s
+  int Count         = 1 << (wBitCount * wPlanes);                 // Count = 2 ^ number of  bits, Bits=1->2 s, 4->16 s, 24->‭16.777.216‬ s
   byte bit_m        = Count - 1;
 
   // check if x_pos/y_pos are given, if no place ico midth of display
@@ -178,6 +124,8 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
     paddedW = (16 -_bitmapInfoHeader.biWidth)%16;
   } else if(wBitCount==24){
     paddedW = 4 - ((_bitmapInfoHeader.biWidth*3)%4);
+    if(paddedW==4)
+      paddedW=0;
   }
 
   // calculate size of  table for icons with a bitCount less or equal than 8
@@ -192,16 +140,16 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
   
   // icons with compressed bitmaps or icons > display size are not suppoerted
   if(_bitmapInfoHeader.biCompression || height > _height || width > _width) { 
-    DEBUG_PRINTLN("Compressed icons or icons greater than LED Matrix not supported");
-    myspiffs.writeLog(F("Compressed icons or icons greater than LED Matrix not supported\n"));
+    DEBUG_PRINTLN("Compressed icons or icons greater than TFT not supported");
+    myfs->writeLog(F("Compressed icons or icons greater than TFT not supported\n"));
     if(fb) free(fb);
-    display.show();
+    //display.show();
     return;
   }
 
-  // clear led matrix
+  // clear TFT
   if(cleanUp & 1)
-    display.clear();
+    tft->clearMainCanvas();
 
   if(wBitCount <= 8) {
     // Icon with  map    
@@ -219,13 +167,13 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
           _i &= bit_m;                 // mask out all other bits
   
           if(!x) {
-            DEBUG_PRINTLN();
+            //DEBUG_PRINTLN();
           }
           if(x<_width && y>=(height-_height) && !_i) {
-            DEBUG_PRINT("o ");
-            display.drawPixel(x+_x_pos, _height-(y+_y_pos), display.getColor(0xff, 0xff, 0xff));
+            //DEBUG_PRINT("o ");
+            tft->drawPixel(x+_x_pos, _height-(y+_y_pos), TFT_WHITE);
           } else {
-            DEBUG_PRINT("  ");
+            //DEBUG_PRINT("  ");
           }
         }
         DEBUG_FLUSH();
@@ -248,15 +196,17 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
               DEBUG_PRINTLN();
             }
             r = _icon[_i].r;
-            g = _icon[_i].r;
-            b = _icon[_i].r;
-            
+            g = _icon[_i].g;
+            b = _icon[_i].b;
+
+#ifdef myDEBUGx
             if(r || g || b) {
               DEBUG_PRINT("o ");
-              display.drawPixel(x+_x_pos, _height-1-(y+_y_pos), display.getColor(r, g, b));
-            } else {
+             } else {
               DEBUG_PRINT("  ");
             }
+#endif
+            tft->drawPixel(x+_x_pos, _height-1-(y+_y_pos), tft->color565(r,g,b));
           }
         }
       }
@@ -264,39 +214,45 @@ void IconRenderer::renderAndDisplay(String iconFileName, int delayAfter, byte cl
     }
   } else {
     // Icon without  map, s defined directly in XorMask (each pixel in BGR)
-    DEBUG_PRINTLN("Icon without  map");
+    DEBUG_PRINTLN("Icon without map");
     for(int y=height-1, offset=0; y>=0; y--) {
       for(int x=0; x<width; x++) {
-        //offset = (x*3) + (y*3*(width+paddedW));
-        offset = (x*3) + (y*3*width)+(paddedW*y);
+        // wBitCount=8/24/32  24 Bit Icon -> 3 Byte per color, 32 Bit Icon -> 4 Byte per Color (3 RGB + 1 Alpha)
+        int wByteCount=wBitCount/8;     
+        offset = (x*wByteCount) + (y*wByteCount*width)+(paddedW*y);
         
         if(x<_width && y>=(height-_height)) {
           r = XorMask[offset+2];
           g = XorMask[offset+1];
           b = XorMask[offset];
+          
           uint16_t xg = x+_x_pos;
           uint16_t yg = y+_y_pos;
-          COLOR_T cg = display.getColor(r, g, b);
-          DEBUG_PRINTF("x=%d, y=%d, c=%#.6x\n",xg,yg,cg);
-          if(cg) {
-            display.drawPixel(xg, _height-1-yg, cg);
+
+ #ifdef myDEBUGx
+          if(r || g || b) {
+            DEBUG_PRINT("o ");
+          } else {
+            DEBUG_PRINT("  ");
           }
+#endif
+          tft->drawPixel(xg, _height-1-yg, tft->color565(r,g,b));
         }
       }
+      DEBUG_PRINTLN();
     }
   }
 
-#ifdef myDEBUG
-  display.DebugOutput(false);
-  display.DebugOutput(true);
-#endif
 
-  display.show(delayAfter);
 
-  // clear led matrix
+  //display.show(delayAfter);
+
+  // clear TFT
   if(cleanUp & 2)
-    display.clear();
+    tft->clearMainCanvas();
 
   if(fb)
     free(fb);
 }
+
+#endif

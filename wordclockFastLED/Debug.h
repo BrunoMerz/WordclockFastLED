@@ -12,7 +12,7 @@
 
 //#define myDEBUG   // generall switch in order to turn on debugging for all classes
 
-#if defined(myDEBUG) && !defined(ESP_TX_RX_AS_GPIO_PINS)
+#if defined(myDEBUG)
 #define DEBUG_PRINT(x) Serial.print(x)
 #define DEBUG_PRINT2(x, y) Serial.print(x, y)
 #define DEBUG_PRINTLN(x) Serial.println(x)

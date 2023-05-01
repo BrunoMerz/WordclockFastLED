@@ -54,7 +54,7 @@ bool MySpiffs::readJson(String _filename, JsonDocument *_jsonDoc) {
       DeserializationError error = deserializeJson(*_jsonDoc, jsonFile);
       jsonFile.close();
       if (!error) {
-#if defined(myDEBUG) && !defined(ESP_TX_RX_AS_GPIO_PINS)
+#if defined(myDEBUG)
         serializeJson(*_jsonDoc, DBG_OUTPUT_PORT);
         DEBUG_PRINTLN("");
 #endif
@@ -85,7 +85,7 @@ bool MySpiffs::writeSettings(bool saveConfig) {
       DEBUG_PRINTLN("failed to open config file for writing");
       return false;
     }
-#if defined(myDEBUG) && !defined(ESP_TX_RX_AS_GPIO_PINS)
+#if defined(myDEBUG)
     serializeJson(jsonDoc, DBG_OUTPUT_PORT);
     DEBUG_PRINTLN();
 #endif
@@ -462,8 +462,8 @@ String MySpiffs::getState(void) {
       Helper::writeState(st);
       Helper::writeState(cb);
     } else {
-      if(kv.value().as<char *>()) {
-        writeFile((char *)kv.value().as<char *>());
+      if(kv.value().as<String>().length()) {
+        writeFile((char *)kv.value().as<String>().c_str());
       }
       Helper::writeState(cb);
     }

@@ -19,6 +19,7 @@
 #define USE_LittleFS
 #include <FS.h>
 #include <LittleFS.h>
+#include <SD.h>
 
 
 #define JSON_WORDCLOCK_COUNT  100
@@ -143,6 +144,8 @@ function uploadfile ( theForm )
   </body>
 </html>
 )";
+
+
 
 /**
  * Class definition
