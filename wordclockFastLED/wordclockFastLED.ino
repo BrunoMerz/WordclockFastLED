@@ -92,8 +92,6 @@ extern "C" {
 #include <Update.h>
 #endif
 
-#define DEST_FS_USES_LITTLEFS
-#include <ESP32-targz.h>
 
 
 #include <string.h>
@@ -116,6 +114,8 @@ extern "C" {
 #include "MyTime.h"
 #include "MyAlexa.h"
 
+#define DEST_FS_USES_LITTLEFS
+#include <ESP32-targz.h>
 
 #ifdef DCF77_SENSOR_EXISTS
   #include "MyDCF77.h"
@@ -350,6 +350,8 @@ void handle_notfound(AsyncWebServerRequest *request) {
   {
 #endif
     DEBUG_PRINTLN("handle_notfound: "+msg+" not found");
+    myspiffs.writeLog((char *)msg.c_str());
+    myspiffs.writeLog("\n",false);
     if(msg=="/test") {
       lastMinutes=-1;
       testMode=true;
@@ -758,6 +760,8 @@ String getHostname(String *hn) {
 }
 
 String processor(const String& var) {
+//  myspiffs.writeLog((char *)var.c_str());
+//  myspiffs.writeLog("\n",false);
   if(var == F("VERSION"))
     return "'"+ssid+"'"+" "+F(FIRMWARE);
   if(var == F("COMPILED"))
@@ -772,6 +776,8 @@ String processor(const String& var) {
     return with_alexa;
   if(var == F("WITH_MQTT"))
     return with_mqtt;
+  if(myspiffs.getSetting(var).length())
+    return myspiffs.getSetting(var); 
   return myspiffs.getResource(var);
 
   return String();

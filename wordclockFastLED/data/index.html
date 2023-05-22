@@ -1,336 +1,391 @@
 <!DOCTYPE html>
 <html lang="de">
+	<head>
+		<title>%Wortuhr Einstellungen%</title>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<meta name="viewport" content="width=device-width">
+		<link rel="icon" type="image/vnd.microsoft.icon" sizes="32x32" href="/favicon.ico">
+		<link rel="stylesheet" type="text/css" href="%design%">
+		<!--link id="currentCSS" rel="stylesheet" type="text/css" href="./beige.css"--> 
+	</head>
 
-<head>
-	<title>%Wortuhr Einstellungen%</title>
-	<meta content="text/html; charset=UTF-8" http-equiv="content-type">
-	<link rel="icon" type="image/vnd.microsoft.icon" sizes="32x32" href="/favicon.ico">
-	<link rel="stylesheet" href="wordclock.css">
-</head>
-
-<body class="body">
-	<p class="heading">%Einstellungen%</p>
-	<p class="heading">%VERSION%</p>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<form name="settings" method="post" enctype="multipart/form-data" onsubmit="return saveSettings(this);" action="#">
-		<table style="text-align: left; width: 650px; height: 77px;">
-			<tbody>
-				<tr>
-					<td style="width: 153px;">%Ein/Aus%</td>
-					<td style="width: 269px;">
-						<label class="switch">
-							<input type="checkbox" name="power" onchange="return saveSettings(this);" value="on">
-							<span class="slider round"></span>
-						</label>
-					</td>
-				</tr>
-				<tr>
-					<td style="width: 153px;">%Sprache%</td>
-					<td style="width: 269px;">
-						<select class="dropbtn" style="width: 180px;" name="language" value="1"
-							onchange="return saveSettings(this);">
-							<optgroup label="%Deutsch%">
-								<option value="0" selected>%Deutsch%</option>
-								<option value="1">%Schw&auml;bisch%</option>
-								<option value="2">%Bayrisch%</option>
-								<option value="3">%S&auml;chsisch%</option>
-							</optgroup>
-							<option value="4">%Schweizerisch%</option>
-							<option value="5">%Englisch%</option>
-							<option value="6">%Englisch AM/PM%</option>
-							<option value="7">%Franz&ouml;sisch%</option>
-							<option value="8">%Italienisch%</option>
-							<option value="9">%Niederl&auml;ndisch%</option>
-							<option value="10">%Spanisch%</option>
-							<option value="11">%Portugiesisch%</option>
-							<option value="12">%Griechisch%</option>
-							<option value="13">%Arabisch%</option>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td style="width: 153px;">%Stunden Effekte anzeigen%</td>
-					<td style="width: 363px;">
-						<input name="effects" type="checkbox" checked="true" onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr>
-					<td style="width: 153px;">%&quot;ES IST&quot; anzeigen%</td>
-					<td style="width: 363px;">
-						<input name="itis" type="checkbox" checked="true" checked="true" onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr>
-					<td style="width: 153px;">%Zeichenweise anzeigen%</td>
-					<td style="width: 363px;">
-						<input name="pulse" type="checkbox" onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr>
-					<td style="width: 153px;">%Nachtabschaltung &quot;ein&quot;%</td>
-					<td style="width: 363px;">
-						<input class="box" name="nighton" type="time" value="02:00"
-							onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr>
-					<td style="width: 153px;">%Nachtabschaltung &quot;aus&quot;%</td>
-					<td style="width: 363px;">
-						<input class="box" name="nightoff" type="time" value="05:00"
-							onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr style="width: 153px;">
-					<td>%Nachthelligkeit%</td>
-					<td>
-						<input class="box" style="width: 42px" type="number" name="brightness_night" min="0" max="99"
-							value="0" onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr style="width: 153px;">
-					<td>%Helligkeit Uhrzeit von%</td>
-					<td>
-						<input class="box" style="width: 42px" type="number" name="brightness_from" min="0" max="99"
-							value="5" onchange="return saveSettings(this);">
-						<label>%bis%</label>
-						<input class="box" style="width: 42px" type="number" name="brightness_to" min="0" max="99"
-							value="35" onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr style="width: 153px;">
-					<td>%Aktuelle Helligkeit%</td>
-					<td>
-						<input class="box" style="width: 42px" type="number" name="curbrightness" value="%BRIGHTNESS%"
-							disabled>
-					</td>
-				</tr>
-				<tr style="width: 153px;">
-					<td>%Uhrzeit Farbe%</td>
-					<td>
-						<input class="box" type="color" name="rgb" value="#ffffff" id="color" title="Hex-Wert eingeben"
-							onchange="return saveSettings(this);">
-					</td>
-				</tr>
-
-				<tr style="width: 153px;">
-					<td>%Farbe Eck-Led oben links%</td>
-					<td>
-						<input class="box" type="color" name="led1" value="#ffffff"
-							onchange="return saveSettings(this);">
-						<label>%oben rechts%</label>
-						<input class="box" type="color" name="led2" value="#ffffff"
-							onchange="return saveSettings(this);">
-					</td>
-				</tr>
-				<tr style="width: 153px;">
-					<td style="text-align: right;">%unten links%</td>
-					<td>
-						<input class="box" type="color" name="led4" value="#ffffff"
-							onchange="return saveSettings(this);">
-						<label>%unten rechts%</label>
-						<input class="box" type="color" name="led3" value="#ffffff"
-							onchange="return saveSettings(this);">
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</form>
-	<br>
-	<form>
-		<table style="text-align: left;">
+	<body class="body">
+	  <div class="content">
+		<table>
 			<tbody>
 				<tr>
 					<td>
-						<input class="button" value="%Ticker% %Einstellungen%"
-							onclick="parent.location='/ticker.html'" />
+						<p class="heading">%Einstellungen% %VERSION%</p>
 					</td>
 					<td>
-						<input class="button" value="%Effekt% %Einstellungen%" onclick="parent.location='/effect.html'" />
+						<input class="sphere" type="radio" id="beige.css" name="x" checked onClick="changeColors('beige.css');">
+						<!--label  for="beige.css"></label-->
+						<div class = 'shadow'></div>
 					</td>
+					<td>
+						<input class="sphere" type="radio" id="grau.css" name="x" onClick="changeColors('grau.css');">
+						<!--label  for="grau.css"></label-->
+						<div class = 'shadow'></div>
+					</td>
+					<td>
+						<input class="sphere" type="radio" id="rot.css" name="x" onClick="changeColors('rot.css');">
+						<!--label  for="rot.css"></label-->
+						<div class = 'shadow'></div>
+					</td>
+					<td>
+						<input class="sphere" type="radio" id="hellgruen.css" name="x" onClick="changeColors('hellgruen.css');">
+						<!--label  for="hellgruen.css"></label-->
+						<div class = 'shadow'></div>
+					</td>
+					
+					
 				</tr>
 			</tbody>
 		</table>
-	</form>
-	<br>
-	<form>
-		<table style="text-align: left;">
-			<tbody>
-				<tr>
-					<td>
-						<input class="button" value="%Experten Einstellungen%"
-							onclick="parent.location='/expert.html'" />
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</form>
+		<form name="settings" method="post" enctype="multipart/form-data" onsubmit="return saveSettings(this);" action="#">
+			<table>
+				<tbody>
+					<tr>
+						<td class=txt>%Ein/Aus%</td>
+						<td>
+							<label class="switch">
+								<input type="checkbox" name="power" onchange="return saveSettings(this);" value="on">
+								<span class="slider round"></span>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Sprache%</td>
+						<td>
+							<select class="dropbtn" name="language"
+								onchange="return saveSettings(this);">
+								<optgroup label="%Deutsch%">
+									<option value="0" selected>%Deutsch%</option>
+									<option value="1">%Schw&auml;bisch%</option>
+									<option value="2">%Bayrisch%</option>
+									<option value="3">%S&auml;chsisch%</option>
+								</optgroup>
+								<option value="4">%Schweizerisch%</option>
+								<option value="5">%Englisch%</option>
+								<option value="6">%Englisch AM/PM%</option>
+								<option value="7">%Franz&ouml;sisch%</option>
+								<option value="8">%Italienisch%</option>
+								<option value="9">%Niederl&auml;ndisch%</option>
+								<option value="10">%Spanisch%</option>
+								<option value="11">%Portugiesisch%</option>
+								<option value="12">%Griechisch%</option>
+								<option value="13">%Arabisch%</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Stunden Effekte anzeigen%</td>
+						<td>
+							<input name="effects" type="checkbox" checked="checked" onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%&quot;ES IST&quot; anzeigen%</td>
+						<td>
+							<input name="itis" type="checkbox" checked="checked" onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Zeichenweise anzeigen%</td>
+						<td>
+							<input name="pulse" type="checkbox" onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Nachtabschaltung &quot;ein&quot;%</td>
+						<td>
+							<input class="box" name="nighton" type="time" value="02:00"
+								onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Nachtabschaltung &quot;aus&quot;%</td>
+						<td>
+							<input class="box" name="nightoff" type="time" value="05:00"
+								onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Nachthelligkeit%</td>
+						<td>
+							<input class="box" type="number" name="brightness_night" min="0" max="99"
+								value="0" onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Helligkeit Uhrzeit von%</td>
+						<td>
+							<input class="box" type="number" name="brightness_from" min="0" max="99"
+								value="5" onchange="return saveSettings(this);">
+							<label>%bis%</label>
+							<input class="box" type="number" name="brightness_to" min="0" max="99"
+								value="35" onchange="return saveSettings(this);">
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Aktuelle Helligkeit%</td>
+						<td>
+							<input class="box" style="width: 44px" type="number" name="curbrightness" value="%BRIGHTNESS%"
+								disabled>
+						</td>
+					</tr>
+					<tr>
+						<td class=txt>%Uhrzeit Farbe%</td>
+						<td>
+							<input class="box" type="color" name="rgb" value="#ffffff" id="color" title="Hex-Wert eingeben"
+								onchange="return saveSettings(this);">
+						</td>
+					</tr>
+				</tbody>
+			</table>	
+			<table>
+				<tbody>
+					<tr>
+						<td class="txt">%Farbe Eck-Led oben links%</td>
+						<td>
+							<input class="box" type="color" name="led1" value="#ffffff"
+								onchange="return saveSettings(this);">
+						</td>
+						<td class="txt">%oben rechts%</td>
+						<td>
+							<input class="box" type="color" name="led2" id="led2" value="#ffffff"
+								onchange="return saveSettings(this);">
+								
+						</td>
+					</tr>
+					<tr>
+						<td class="txt">%unten links%</td>
+						<td>
+							<input class="box" type="color" name="led4" value="#ffffff"
+								onchange="return saveSettings(this);">
+						</td>
+						<td class="txt">%unten rechts%</td>
+						<td>
+							<input class="box" type="color" name="led3" value="#ffffff"
+								onchange="return saveSettings(this);">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+		<br>
+		<form>
+			<table>
+				<tbody>
+					<tr>
+						<td>
+							<input class="button" value="%Ticker% %Einstellungen%" onclick="parent.location='./ticker.html'">
+						</td>
+						<td>
+							<input class="button" value="%Effekt% %Einstellungen%" onclick="parent.location='./effect.html'">
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<input class="button" value="%Experten% %Einstellungen%" onclick="parent.location='./expert.html'">
+						</td>
+						<td>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		  </div>
+		</form>
 
-	<script>
+		<script>
 
-		function getData() {
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function () {
-				if (this.readyState == 4 && this.status == 200) {
-					var obj = JSON.parse(this.responseText);
-					if (obj.hasOwnProperty("language")) {
-						document.settings.language.options[obj.language].selected = true;
-					}
-					if (obj.hasOwnProperty("rgb")) {
-						document.settings.rgb.value = obj.rgb;
-					}
-					if (obj.hasOwnProperty("led1")) {
-						document.settings.led1.value = obj.led1;
-					}
-					if (obj.hasOwnProperty("led2")) {
-						document.settings.led2.value = obj.led2;
-					}
-					if (obj.hasOwnProperty("led3")) {
-						document.settings.led3.value = obj.led3;
-					}
-					if (obj.hasOwnProperty("led4")) {
-						document.settings.led4.value = obj.led4;
-					}
-					if (obj.hasOwnProperty("nighton")) {
-						document.settings.nighton.value = obj.nighton;
-					}
-					if (obj.hasOwnProperty("nightoff")) {
-						document.settings.nightoff.value = obj.nightoff;
-					}
-					if (obj.hasOwnProperty("brightness_night")) {
-						document.settings.brightness_night.value = obj.brightness_night;
-					}
-					if (obj.hasOwnProperty("brightness_from")) {
-						document.settings.brightness_from.value = obj.brightness_from;
-					}
-					if (obj.hasOwnProperty("brightness_to")) {
-						document.settings.brightness_to.value = obj.brightness_to;
-					}
-					if (obj.hasOwnProperty("itis")) {
-						if (obj.itis == "on") {
-							document.settings.itis.checked = "on";
-							document.settings.itis.value = "on";
-						} else {
-							document.settings.itis.checked = "";
-							document.settings.itis.value = "off";
+			function getData() {
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function () {
+					if (this.readyState == 4 && this.status == 200) {
+						var obj = JSON.parse(this.responseText);
+						if (obj.hasOwnProperty("language")) {
+							document.settings.language.options[obj.language].selected = true;
 						}
-					}
-					if (obj.hasOwnProperty("effects")) {
-						if (obj.effects == "on") {
-							document.settings.effects.checked = "on";
-							document.settings.effects.value = "on";
-						} else {
-							document.settings.effects.checked = "";
-							document.settings.effects.value = "off";
+						if (obj.hasOwnProperty("rgb")) {
+							document.settings.rgb.value = obj.rgb;
 						}
-					}
-					if (obj.hasOwnProperty("pulse")) {
-						if (obj.pulse == "on") {
-							document.settings.pulse.checked = "on";
-							document.settings.pulse.value = "on";
-						} else {
-							document.settings.pulse.checked = "";
-							document.settings.pulse.value = "off";
+						if (obj.hasOwnProperty("led1")) {
+							document.settings.led1.value = obj.led1;
 						}
-					}
-					if (obj.hasOwnProperty("power")) {
-						if (obj.power == "on") {
-							document.settings.power.checked = "on";
-							document.settings.power.value = "on";
-						} else {
-							document.settings.power.checked = "";
-							document.settings.power.value = "off";
+						if (obj.hasOwnProperty("led2")) {
+							document.settings.led2.value = obj.led2;
 						}
-					}
+						if (obj.hasOwnProperty("led3")) {
+							document.settings.led3.value = obj.led3;
+						}
+						if (obj.hasOwnProperty("led4")) {
+							document.settings.led4.value = obj.led4;
+						}
+						if (obj.hasOwnProperty("nighton")) {
+							document.settings.nighton.value = obj.nighton;
+						}
+						if (obj.hasOwnProperty("nightoff")) {
+							document.settings.nightoff.value = obj.nightoff;
+						}
+						if (obj.hasOwnProperty("brightness_night")) {
+							document.settings.brightness_night.value = obj.brightness_night;
+						}
+						if (obj.hasOwnProperty("brightness_from")) {
+							document.settings.brightness_from.value = obj.brightness_from;
+						}
+						if (obj.hasOwnProperty("brightness_to")) {
+							document.settings.brightness_to.value = obj.brightness_to;
+						}
+						if (obj.hasOwnProperty("itis")) {
+							if (obj.itis == "on") {
+								document.settings.itis.checked = "on";
+								document.settings.itis.value = "on";
+							} else {
+								document.settings.itis.checked = "";
+								document.settings.itis.value = "off";
+							}
+						}
+						if (obj.hasOwnProperty("effects")) {
+							if (obj.effects == "on") {
+								document.settings.effects.checked = "on";
+								document.settings.effects.value = "on";
+							} else {
+								document.settings.effects.checked = "";
+								document.settings.effects.value = "off";
+							}
+						}
+						if (obj.hasOwnProperty("pulse")) {
+							if (obj.pulse == "on") {
+								document.settings.pulse.checked = "on";
+								document.settings.pulse.value = "on";
+							} else {
+								document.settings.pulse.checked = "";
+								document.settings.pulse.value = "off";
+							}
+						}
+						if (obj.hasOwnProperty("power")) {
+							if (obj.power == "on") {
+								document.settings.power.checked = "on";
+								document.settings.power.value = "on";
+							} else {
+								document.settings.power.checked = "";
+								document.settings.power.value = "off";
+							}
+						}
+						
+						if (obj.hasOwnProperty("design")) {
+							//if(!document.getElementById('currentCSS').href.includes(obj.design)) {
+								//console.log("property: "+obj.design+" "+document.getElementById('currentCSS').href);
+								//document.getElementById('currentCSS').href = obj.design;
+								document.getElementById(obj.design).checked="checked";
+							//}
+						}
+						
+					};
 				};
-			};
-			xhttp.open("GET", "getSettings", true);
-			xhttp.send();
-		}
-
-		document.addEventListener('DOMContentLoaded', getData, false);
-
-		function oReqSuccess() {
-			this.callback.apply(this, this.arguments);
-		}
-
-
-		function oReqError() {
-			console.error(this.statusText);
-		}
-
-
-		function callback() {
-			location.reload();
-		}
-
-
-		function saveSettings(theForm) {
-			var oData, oReq, oJson = {};
-
-			oData = new FormData(document.settings);
-
-			oReq = new XMLHttpRequest();
-
-			oReq.callback = callback;
-			oReq.onload = oReqSuccess;
-			oReq.onerror = oReqError;
-
-			oReq.open("POST", "/saveSettings", true);
-			oReq.setRequestHeader("Content-type", "application/json");
-			oData.forEach((value, key) => { oJson[key] = value });
-			oJson["effects"] = document.settings.effects.value;
-			oJson["itis"] = document.settings.itis.value;
-			oJson["pulse"] = document.settings.pulse.value;
-			oJson["power"] = document.settings.power.value;
-			//oJson["brightness"] = Math.round((parseInt(document.settings.brightness_from.value) + parseInt(document.settings.brightness_to.value)) / 2);
-			
-			dateobj = new Date();
-			var diff = dateobj.getTimezoneOffset();
-			dateobj.setMinutes(dateobj.getMinutes()+(diff*-1));
-			var dt_f = dateobj.toISOString().substring(0,19);
-			oJson["time"] = dt_f;
-			
-			s = JSON.stringify(oJson);
-			oReq.send(s);
-			return false;
-		}
-
-		document.settings.itis.addEventListener("click", function () {
-			if (document.settings.itis.checked) {
-				document.settings.itis.value = "on";
-			} else {
-				document.settings.itis.value = "off";
+				xhttp.open("GET", "getSettings", true);
+				xhttp.send();
 			}
-		});
 
-		document.settings.effects.addEventListener("click", function () {
-			if (document.settings.effects.checked) {
-				document.settings.effects.value = "on";
-			} else {
-				document.settings.effects.value = "off";
+			document.addEventListener('DOMContentLoaded', getData, false);
+
+			function oReqSuccess() {
+				this.callback.apply(this, this.arguments);
 			}
-		});
 
-		document.settings.pulse.addEventListener("click", function () {
-			if (document.settings.pulse.checked) {
-				document.settings.pulse.value = "on";
-			} else {
-				document.settings.pulse.value = "off";
+
+			function oReqError() {
+				console.error(this.statusText);
 			}
-		});
-		document.settings.power.addEventListener("click", function () {
-			if (document.settings.power.checked) {
-				document.settings.power.value = "on";
-			} else {
-				document.settings.power.value = "off";
+
+
+			function callback() {
+				location.reload();
 			}
-		});
 
-	</script>
-</body>
 
+			function saveSettings(theForm) {
+				var oData, oReq, oJson = {};
+
+				oData = new FormData(document.settings);
+
+				oReq = new XMLHttpRequest();
+
+				oReq.callback = callback;
+				oReq.onload = oReqSuccess;
+				oReq.onerror = oReqError;
+
+				oReq.open("POST", "/saveSettings", true);
+				oReq.setRequestHeader("Content-type", "application/json");
+				oData.forEach((value, key) => { oJson[key] = value });
+				oJson["effects"] = document.settings.effects.value;
+				oJson["itis"] = document.settings.itis.value;
+				oJson["pulse"] = document.settings.pulse.value;
+				oJson["power"] = document.settings.power.value;
+				//oJson["brightness"] = Math.round((parseInt(document.settings.brightness_from.value) + parseInt(document.settings.brightness_to.value)) / 2);
+				
+				dateobj = new Date();
+				var diff = dateobj.getTimezoneOffset();
+				dateobj.setMinutes(dateobj.getMinutes()+(diff*-1));
+				var dt_f = dateobj.toISOString().substring(0,19);
+				oJson["time"] = dt_f;
+				
+				s = JSON.stringify(oJson);
+				oReq.send(s);
+				return false;
+			}
+
+			document.settings.itis.addEventListener("click", function () {
+				if (document.settings.itis.checked) {
+					document.settings.itis.value = "on";
+				} else {
+					document.settings.itis.value = "off";
+				}
+			});
+
+			document.settings.effects.addEventListener("click", function () {
+				if (document.settings.effects.checked) {
+					document.settings.effects.value = "on";
+				} else {
+					document.settings.effects.value = "off";
+				}
+			});
+
+			document.settings.pulse.addEventListener("click", function () {
+				if (document.settings.pulse.checked) {
+					document.settings.pulse.value = "on";
+				} else {
+					document.settings.pulse.value = "off";
+				}
+			});
+
+			document.settings.power.addEventListener("click", function () {
+				if (document.settings.power.checked) {
+					document.settings.power.value = "on";
+				} else {
+					document.settings.power.value = "off";
+				}
+			});
+
+			function changeColors (newCSS) {
+				var oReq, oJson = {};
+				//if(!document.getElementById('currentCSS').href.includes(newCSS)) {
+					//console.log(newCSS);
+					//console.log(document.getElementById('currentCSS').href);
+					//document.getElementById('currentCSS').href = newCSS;
+					oReq = new XMLHttpRequest();
+					oReq.callback = callback;
+					oReq.onload = oReqSuccess;
+					oReq.onerror = oReqError;
+					oReq.open("POST", "/saveSettings", true);
+					oReq.setRequestHeader("Content-type", "application/json");
+					oJson["design"] = newCSS
+					s = JSON.stringify(oJson);
+					oReq.send(s);
+				//}
+			}
+
+		</script>
+	</body>
 </html>

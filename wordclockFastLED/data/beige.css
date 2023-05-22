@@ -1,0 +1,9 @@
+	@import url("wordclock.css");
+	:root {
+		--hintergrund-hell: #e8e0d5;
+		--text-farbe: #614114;
+		--text-farbe-hell: #9b7d54;
+		--button-aktiv: #3d2505;
+		--rahmen-schatten: #d9c9b2;
+		--schieberegler-aus: #a08663;
+	}

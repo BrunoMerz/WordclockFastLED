@@ -50,15 +50,16 @@ class MyTFT: public TFT_eSPI {
 
 #else
 
+
 class MyTFT {
   public:
     MyTFT(void) {};
-    static MyTFT *getInstance() {};
+    static MyTFT *getInstance() {return (MyTFT*)0;};
     void init(void) {};
     void drawPixel(uint16_t x, uint16_t y, uint32_t c) {};
-    uint32_t color565(uint8_t r, uint8_t g, uint8_t b) {};
-    uint16_t height() {};
-    uint16_t width() {};
+    uint32_t color565(uint8_t r, uint8_t g, uint8_t b) {return 0;};
+    uint16_t height() {return 0;};
+    uint16_t width() {return 0;};
     void drawStateLine(String text) {};
     void clearMainCanvas(void) {};
     void clearStateCanvas(void) {};
